@@ -1021,12 +1021,6 @@ function loadHistorial() {
   const list = document.getElementById('historial-list');
   list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray-text)">Cargando...</div>';
 
-  if (!API_URL) {
-    historialData = [];
-    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray-text)">Configura la URL del API para ver el historial</div>';
-    return;
-  }
-
   fetch(API_URL, {
     method: 'POST',
     body: JSON.stringify({ action: 'getHistorial', tabla })
@@ -1041,11 +1035,38 @@ function loadHistorial() {
 }
 
 function filtrarHistorial() {
-  const buscar = document.getElementById('hist-buscar').value.toLowerCase();
-  const lista = historialData.filter(r =>
-    JSON.stringify(r).toLowerCase().includes(buscar)
-  );
+  const buscar = document.getElementById('hist-buscar').value.toLowerCase().trim();
+  const lista = historialData.filter(r => {
+    if (!buscar) return true;
+    // Buscar por nombre, DNI, responsable, tipo prenda, placa, serie
+    const nombre = getNombrePersonal(r.ID_Personal).toLowerCase();
+    const dni = getDNIPersonal(r.ID_Personal).toLowerCase();
+    const campos = JSON.stringify(r).toLowerCase();
+    return nombre.includes(buscar) || dni.includes(buscar) || campos.includes(buscar);
+  });
   renderHistorial(lista);
+}
+
+function getNombrePersonal(idPersonal) {
+  const p = personalData.find(x => x.ID_Personal == idPersonal);
+  return p ? `${p.Nombres} ${p.Apellidos}` : idPersonal || '';
+}
+
+function getDNIPersonal(idPersonal) {
+  const p = personalData.find(x => x.ID_Personal == idPersonal);
+  return p ? (p.DNI || '') : '';
+}
+
+function formatFecha(fechaStr) {
+  if (!fechaStr) return '';
+  // Si ya tiene formato dd/MM/yyyy HH:mm
+  if (fechaStr.includes('/')) return fechaStr;
+  // Si es formato ISO
+  try {
+    const d = new Date(fechaStr);
+    return d.toLocaleDateString('es-PE', { day:'2-digit', month:'2-digit', year:'numeric' }) +
+           ' ' + d.toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
+  } catch(e) { return fechaStr; }
 }
 
 function renderHistorial(data) {
@@ -1054,26 +1075,63 @@ function renderHistorial(data) {
     list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray-text)">No hay registros</div>';
     return;
   }
-  list.innerHTML = data.slice(0, 50).map(r => {
-    const mov = Object.values(r).find(v => ['Entrega','Devolución','Salida','Retorno','Renovación'].includes(v)) || '';
+
+  const IGNORAR = new Set(['Firma','Foto','Foto_Frontal','Foto_Posterior','Foto_KM','PDF_Acta',
+    'ID_Uniforme','ID_Arma_Movimiento','ID_Vehiculo_Mov','ID_Carnet_Mov','ID_Personal','Fecha']);
+
+  list.innerHTML = data.slice(0, 100).map((r, idx) => {
+    const mov = r.Movimiento || '';
     const clase = mov.toLowerCase().includes('devolu') || mov.toLowerCase().includes('retorno') ? 'devolucion' :
                   mov.toLowerCase().includes('renova') ? 'renovacion' : '';
     const tagClass = clase || 'entrega';
-    const fecha = r.Fecha || '';
-    const personal = r.ID_Personal || '';
+    const fecha = formatFecha(r.Fecha);
+    const nombre = getNombrePersonal(r.ID_Personal);
+    const dni = getDNIPersonal(r.ID_Personal);
+    const pdfUrl = r.PDF_Acta || '';
+
+    // Campos visibles para las tags
+    const tagsExtra = Object.entries(r)
+      .filter(([k,v]) => v && !IGNORAR.has(k) && k !== 'Movimiento' && v.toString().trim() !== '')
+      .slice(0, 5)
+      .map(([k,v]) => `<span class="tag">${v}</span>`)
+      .join('');
+
+    // Detalle completo (oculto)
+    const detalleItems = Object.entries(r)
+      .filter(([k,v]) => v && !new Set(['Firma','Foto','Foto_Frontal','Foto_Posterior','Foto_KM']).has(k) && v.toString().trim() !== '')
+      .map(([k,v]) => {
+        if (k === 'PDF_Acta') return `<div style="margin:4px 0"><b>${k}:</b> <a href="${v}" target="_blank" style="color:var(--navy);font-weight:700">📄 Ver PDF</a></div>`;
+        return `<div style="margin:4px 0"><b>${k}:</b> ${v}</div>`;
+      }).join('');
+
     return `
-      <div class="historial-item ${clase}">
+      <div class="historial-item ${clase}" style="cursor:pointer" onclick="toggleDetalle('det-${idx}')">
         <div class="hist-header">
-          <div class="hist-nombre">${personal}</div>
-          <div class="hist-fecha">${fecha}</div>
+          <div>
+            <div class="hist-nombre">👤 ${nombre}</div>
+            <div style="font-size:11px;color:var(--gray-text);margin-top:2px">DNI: ${dni}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="hist-fecha">📅 ${fecha}</div>
+            <div style="font-size:11px;color:var(--gray-text);margin-top:2px">▼ ver detalle</div>
+          </div>
         </div>
         <div class="hist-tags">
-          <span class="tag ${tagClass}">${mov}</span>
-          ${Object.entries(r).slice(0,6).filter(([k,v]) => v && !['ID_Uniforme','ID_Arma_Movimiento','ID_Vehiculo_Mov','ID_Carnet_Mov','Firma','Foto','PDF_Acta','ID_Personal','Fecha'].includes(k)).map(([k,v]) => `<span class="tag">${v}</span>`).join('')}
+          <span class="tag ${tagClass}">📦 ${mov}</span>
+          ${tagsExtra}
+          ${pdfUrl ? `<a href="${pdfUrl}" target="_blank" onclick="event.stopPropagation()" class="tag" style="background:#E3F0FF;color:var(--navy);text-decoration:none">📄 PDF</a>` : ''}
+        </div>
+        <div id="det-${idx}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-border);font-size:12px;color:var(--navy-dark)">
+          ${detalleItems}
         </div>
       </div>
     `;
   }).join('');
+}
+
+function toggleDetalle(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────
