@@ -1226,11 +1226,25 @@ function getDNIPersonal(idPersonal) {
 
 function formatFecha(fechaStr) {
   if (!fechaStr) return '';
-  // Si ya tiene formato dd/MM/yyyy HH:mm (viene del backend en hora Lima)
-  if (fechaStr.toString().includes('/')) return fechaStr;
-  // Si es formato ISO (UTC) — convertir a Lima UTC-5
+  const str = fechaStr.toString().trim();
+  if (!str) return '';
+
+  // Si viene de Sheets en formato dd/MM/yyyy HH:mm — ya está en hora Lima, mostrar directo
+  if (str.includes('/')) {
+    // Asegurar formato consistente HH:mm
+    const parts = str.split(' ');
+    if (parts.length >= 2) {
+      const timeParts = parts[1].split(':');
+      const hh = timeParts[0].padStart(2, '0');
+      const mm = (timeParts[1]||'00').padStart(2, '0');
+      return parts[0] + ' ' + hh + ':' + mm;
+    }
+    return str;
+  }
+
+  // Si es formato ISO (UTC) — convertir a Lima
   try {
-    const d = new Date(fechaStr);
+    const d = new Date(str);
     return d.toLocaleDateString('es-PE', {
       timeZone: 'America/Lima',
       day: '2-digit', month: '2-digit', year: 'numeric'
@@ -1238,7 +1252,7 @@ function formatFecha(fechaStr) {
       timeZone: 'America/Lima',
       hour: '2-digit', minute: '2-digit'
     });
-  } catch(e) { return fechaStr; }
+  } catch(e) { return str; }
 }
 
 function renderHistorial(data) {
