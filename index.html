@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -674,12 +675,17 @@
           <option value="Carnets">Carnets</option>
         </select>
       </div>
-      <div class="form-group">
+      <div class="form-group" style="position:relative">
         <label>Buscar</label>
-        <input type="text" id="hist-buscar" placeholder="Nombre, DNI..." oninput="filtrarHistorial()">
+        <input type="text" id="hist-buscar" placeholder="Nombre o DNI..." 
+          oninput="filtrarHistorial()"
+          onkeydown="if(event.key==='Escape'){this.value='';filtrarHistorial();}">
+        <button onclick="document.getElementById('hist-buscar').value='';filtrarHistorial();" 
+          style="position:absolute;right:8px;bottom:8px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--gray-text)" title="Limpiar búsqueda">✕</button>
       </div>
     </div>
   </div>
+  <div id="hist-counter" style="font-size:12px;color:var(--gray-text);padding:4px 0 8px 4px;font-style:italic"></div>
   <div id="historial-list"></div>
 </div>
 
@@ -1184,25 +1190,39 @@ function loadHistorial() {
 
 function filtrarHistorial() {
   const buscar = document.getElementById('hist-buscar').value.toLowerCase().trim();
+  if (!buscar) {
+    renderHistorial(historialData);
+    return;
+  }
   const lista = historialData.filter(r => {
-    if (!buscar) return true;
-    // Buscar por nombre, DNI, responsable, tipo prenda, placa, serie
+    // Buscar en nombre completo resuelto
     const nombre = getNombrePersonal(r.ID_Personal).toLowerCase();
     const dni = getDNIPersonal(r.ID_Personal).toLowerCase();
-    const campos = JSON.stringify(r).toLowerCase();
+    // Buscar en todos los campos del registro
+    const campos = Object.values(r).map(v => (v||'').toString().toLowerCase()).join(' ');
     return nombre.includes(buscar) || dni.includes(buscar) || campos.includes(buscar);
   });
   renderHistorial(lista);
 }
 
 function getNombrePersonal(idPersonal) {
-  const p = personalData.find(x => x.ID_Personal == idPersonal);
-  return p ? `${p.Nombres} ${p.Apellidos}` : idPersonal || '';
+  if (!idPersonal) return '';
+  const p = personalData.find(x =>
+    x.ID_Personal == idPersonal ||
+    (x.DNI && x.DNI.toString() == idPersonal.toString())
+  );
+  if (p) return ((p.Nombres||'') + ' ' + (p.Apellidos||'')).trim();
+  // Si no encontramos en personalData, el historial puede traer el nombre directamente
+  return idPersonal.toString();
 }
 
 function getDNIPersonal(idPersonal) {
-  const p = personalData.find(x => x.ID_Personal == idPersonal);
-  return p ? (p.DNI || '') : '';
+  if (!idPersonal) return '';
+  const p = personalData.find(x =>
+    x.ID_Personal == idPersonal ||
+    (x.DNI && x.DNI.toString() == idPersonal.toString())
+  );
+  return p ? (p.DNI || '').toString() : '';
 }
 
 function formatFecha(fechaStr) {
@@ -1219,8 +1239,16 @@ function formatFecha(fechaStr) {
 
 function renderHistorial(data) {
   const list = document.getElementById('historial-list');
+  // Mostrar contador de resultados
+  const buscar = document.getElementById('hist-buscar').value.trim();
+  const counter = document.getElementById('hist-counter');
+  if (counter) {
+    counter.textContent = buscar
+      ? `${data.length} resultado(s) para "${buscar}"`
+      : `${data.length} registro(s) en total`;
+  }
   if (!data.length) {
-    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray-text)">No hay registros</div>';
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray-text)">No se encontraron registros</div>';
     return;
   }
 
