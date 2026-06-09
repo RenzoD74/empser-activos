@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>EMPSER — Control de Activos</title>
+<style>
+  :root {
+    --navy: #1A3A5C;
+    --navy-dark: #0F2540;
+    --navy-light: #2E5F8A;
+    --yellow: #F5C518;
+    --yellow-light: #FFF3B0;
+    --white: #FFFFFF;
+    --gray-bg: #F4F6F9;
+    --gray-border: #DDE3EC;
+    --gray-text: #6B7A93;
+    --red: #E53935;
+    --green: #2E7D32;
+    --shadow: 0 2px 12px rgba(26,58,92,0.10);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--gray-bg); color: var(--navy-dark); min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--navy); color: var(--white); padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .header-logo { display: flex; align-items: center; gap: 10px; }
+  .header-logo .badge { background: var(--yellow); color: var(--navy); font-weight: 900; font-size: 13px; padding: 4px 10px; border-radius: 6px; letter-spacing: 1px; }
+  .header-title { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+  .header-time { font-size: 12px; color: rgba(255,255,255,0.7); }
+
+  /* TABS */
+  .tabs { background: var(--navy-dark); display: flex; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 12px 16px; color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; letter-spacing: 0.5px; text-transform: uppercase; }
+  .tab.active { color: var(--yellow); border-bottom-color: var(--yellow); }
+  .tab:hover:not(.active) { color: rgba(255,255,255,0.9); }
+
+  /* PAGES */
+  .page { display: none; padding: 16px; max-width: 700px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card { background: var(--white); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .card-title::before { content: ''; display: block; width: 4px; height: 18px; background: var(--yellow); border-radius: 2px; }
+
+  /* FORM */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 11px; font-weight: 700; color: var(--gray-text); text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    border: 1.5px solid var(--gray-border); border-radius: 8px; padding: 10px 12px;
+    font-size: 14px; color: var(--navy-dark); background: var(--white);
+    transition: border-color 0.2s; outline: none; width: 100%;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--navy-light); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  /* MOVIMIENTO TOGGLE */
+  .mov-toggle { display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 1.5px solid var(--gray-border); margin-bottom: 16px; }
+  .mov-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .mov-btn.entrega { background: var(--white); color: var(--navy); }
+  .mov-btn.entrega.active { background: var(--navy); color: var(--white); }
+  .mov-btn.devolucion { background: var(--white); color: var(--navy); }
+  .mov-btn.devolucion.active { background: var(--green); color: var(--white); }
+  .mov-btn.renovacion { background: var(--white); color: var(--navy); }
+  .mov-btn.renovacion.active { background: var(--yellow); color: var(--navy); }
+
+  /* PRENDAS TABLE */
+  .prendas-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  .prendas-table th { background: var(--navy); color: var(--white); padding: 8px; font-size: 11px; text-align: left; }
+  .prendas-table td { padding: 4px; border-bottom: 1px solid var(--gray-border); }
+  .prendas-table td input, .prendas-table td select { border: 1px solid var(--gray-border); border-radius: 6px; padding: 6px 8px; font-size: 12px; width: 100%; }
+  .btn-add-prenda { background: var(--navy); color: var(--white); border: none; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .btn-remove-prenda { background: var(--red); color: var(--white); border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
+
+  /* CHECKLIST */
+  .checklist { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .check-item { display: flex; align-items: center; gap: 10px; background: var(--gray-bg); border-radius: 8px; padding: 10px 12px; cursor: pointer; border: 1.5px solid var(--gray-border); transition: all 0.2s; }
+  .check-item.checked { background: #E8F5E9; border-color: var(--green); }
+  .check-item input { display: none; }
+  .check-icon { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--gray-border); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; transition: all 0.2s; }
+  .check-item.checked .check-icon { background: var(--green); border-color: var(--green); color: white; }
+  .check-label { font-size: 13px; font-weight: 600; }
+
+  /* FIRMA */
+  .firma-container { border: 2px dashed var(--gray-border); border-radius: 8px; overflow: hidden; background: var(--white); position: relative; }
+  .firma-container canvas { display: block; touch-action: none; cursor: crosshair; }
+  .firma-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .btn-clear { background: var(--gray-bg); color: var(--navy); border: 1.5px solid var(--gray-border); border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+  /* FOTO */
+  .foto-upload { border: 2px dashed var(--gray-border); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+  .foto-upload:hover { border-color: var(--navy-light); background: var(--gray-bg); }
+  .foto-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .foto-upload-icon { font-size: 28px; margin-bottom: 6px; }
+  .foto-upload-text { font-size: 12px; color: var(--gray-text); font-weight: 600; }
+  .foto-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .foto-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 2px solid var(--gray-border); }
+
+  /* BUTTONS */
+  .btn-submit { background: var(--navy); color: var(--white); border: none; border-radius: 10px; padding: 14px 24px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; letter-spacing: 0.5px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-submit:hover { background: var(--navy-light); }
+  .btn-submit:disabled { background: var(--gray-text); cursor: not-allowed; }
+  .btn-submit.success { background: var(--green); }
+
+  /* HISTORIAL */
+  .historial-item { background: var(--white); border-radius: 10px; padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); border-left: 4px solid var(--navy); }
+  .historial-item.devolucion { border-left-color: var(--green); }
+  .historial-item.renovacion { border-left-color: var(--yellow); }
+  .hist-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .hist-nombre { font-weight: 700; font-size: 14px; }
+  .hist-fecha { font-size: 11px; color: var(--gray-text); }
+  .hist-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .tag { background: var(--gray-bg); color: var(--navy); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+  .tag.entrega { background: #E3F0FF; color: var(--navy); }
+  .tag.devolucion { background: #E8F5E9; color: var(--green); }
+  .tag.renovacion { background: var(--yellow-light); color: #7A6000; }
+
+  /* DASHBOARD */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: var(--white); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); text-align: center; }
+  .stat-number { font-size: 32px; font-weight: 900; color: var(--navy); line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--gray-text); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+  .stat-sub { font-size: 12px; color: var(--red); font-weight: 700; margin-top: 4px; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--navy-dark); color: var(--white); padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 9999; transition: transform 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--green); }
+  .toast.error { background: var(--red); }
+
+  /* LOADING */
+  .loading { display: none; position: fixed; inset: 0; background: rgba(15,37,64,0.7); z-index: 9998; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+  .loading.show { display: flex; }
+  .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.3); border-top-color: var(--yellow); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .loading-text { color: var(--white); font-weight: 700; font-size: 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* PERSONAL SELECTOR */
+  .personal-card { background: var(--gray-bg); border-radius: 8px; padding: 10px 14px; margin-top: 4px; display: none; }
+  .personal-card.show { display: block; }
+  .personal-info { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .personal-sub { font-size: 11px; color: var(--gray-text); margin-top: 2px; }
+
+  @media (max-width: 480px) {
+    .form-row { grid-template-columns: 1fr; }
+    .form-row.three { grid-template-columns: 1fr 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    <div class="badge">EMPSER</div>
+    <div class="header-title">Control de Activos</div>
+  </div>
+  <div class="header-time" id="clock"></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('uniformes')">👕 Uniformes</div>
+  <div class="tab" onclick="showTab('armamento')">🔫 Armamento</div>
+  <div class="tab" onclick="showTab('vehiculos')">🚗 Vehículos</div>
+  <div class="tab" onclick="showTab('carnets')">🪪 Carnets</div>
+  <div class="tab" onclick="showTab('historial')">📋 Historial</div>
+  <div class="tab" onclick="showTab('dashboard')">📊 Dashboard</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- UNIFORMES -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page active" id="page-uniformes">
+  <div class="card">
+    <div class="card-title">Tipo de Movimiento</div>
+    <div class="mov-toggle">
+      <div class="mov-btn entrega active" onclick="setMov('uniformes','Entrega',this)">📦 Entrega</div>
+      <div class="mov-btn renovacion" onclick="setMov('uniformes','Renovación',this)">🔄 Renovación</div>
+      <div class="mov-btn devolucion" onclick="setMov('uniformes','Devolución',this)">↩️ Devolución</div>
+    </div>
+    <input type="hidden" id="u-movimiento" value="Entrega">
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos del Colaborador</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Colaborador *</label>
+        <select id="u-personal" onchange="mostrarPersonal('u')">
+          <option value="">Seleccionar...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Responsable *</label>
+        <input type="text" id="u-responsable" placeholder="Quien entrega">
+      </div>
+    </div>
+    <div class="personal-card" id="u-personal-card">
+      <div class="personal-info" id="u-personal-nombre"></div>
+      <div class="personal-sub" id="u-personal-info"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Detalle de Prendas</div>
+    <table class="prendas-table" id="u-prendas-table">
+      <thead>
+        <tr>
+          <th>Prenda</th>
+          <th>Talla</th>
+          <th>Color</th>
+          <th>Cant.</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="u-prendas-body"></tbody>
+    </table>
+    <button class="btn-add-prenda" onclick="addPrenda()">+ Agregar Prenda</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Observaciones</div>
+    <div class="form-group">
+      <textarea id="u-observaciones" placeholder="Observaciones adicionales..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fotografía</div>
+    <div class="foto-upload" id="u-foto-upload">
+      <input type="file" accept="image/*" capture="environment" multiple onchange="handleFotos(event,'u')">
+      <div class="foto-upload-icon">📷</div>
+      <div class="foto-upload-text">Toca para tomar foto o seleccionar</div>
+    </div>
+    <div class="foto-preview" id="u-foto-preview"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Firma del Colaborador</div>
+    <div class="firma-container">
+      <canvas id="u-firma" width="600" height="180"></canvas>
+    </div>
+    <div class="firma-actions">
+      <button class="btn-clear" onclick="clearFirma('u-firma')">🗑 Borrar Firma</button>
+    </div>
+  </div>
+
+  <button class="btn-submit" onclick="submitForm('uniformes')">
+    ✅ Registrar Entrega/Devolución
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- ARMAMENTO -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-armamento">
+  <div class="card">
+    <div class="card-title">Tipo de Movimiento</div>
+    <div class="mov-toggle">
+      <div class="mov-btn entrega active" onclick="setMov('armamento','Entrega',this)">📦 Entrega</div>
+      <div class="mov-btn devolucion" onclick="setMov('armamento','Devolución',this)">↩️ Devolución</div>
+    </div>
+    <input type="hidden" id="a-movimiento" value="Entrega">
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos del Colaborador</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Colaborador *</label>
+        <select id="a-personal" onchange="mostrarPersonal('a')">
+          <option value="">Seleccionar...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Responsable Armería *</label>
+        <input type="text" id="a-responsable" placeholder="Encargado de armería">
+      </div>
+    </div>
+    <div class="personal-card" id="a-personal-card">
+      <div class="personal-info" id="a-personal-nombre"></div>
+      <div class="personal-sub" id="a-personal-info"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos del Arma</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Marca</label>
+        <input type="text" id="a-marca" placeholder="Ej: Smith & Wesson">
+      </div>
+      <div class="form-group">
+        <label>Modelo</label>
+        <input type="text" id="a-modelo" placeholder="Ej: M&P9">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>N° de Serie *</label>
+        <input type="text" id="a-serie" placeholder="Número de serie">
+      </div>
+      <div class="form-group">
+        <label>Tipo de Arma</label>
+        <select id="a-tipo">
+          <option>Revólver</option>
+          <option>Pistola</option>
+          <option>Escopeta</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Estado del Arma</label>
+        <select id="a-estado">
+          <option>Operativo</option>
+          <option>En mantenimiento</option>
+          <option>Baja</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Munición Entregada</label>
+        <input type="number" id="a-mun-entregada" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>Munición Devuelta</label>
+        <input type="number" id="a-mun-devuelta" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Observaciones</label>
+        <textarea id="a-observaciones" placeholder="Observaciones..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fotografía del Arma</div>
+    <div class="foto-upload">
+      <input type="file" accept="image/*" capture="environment" onchange="handleFotos(event,'a')">
+      <div class="foto-upload-icon">📷</div>
+      <div class="foto-upload-text">Foto del arma</div>
+    </div>
+    <div class="foto-preview" id="a-foto-preview"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Firma del Colaborador</div>
+    <div class="firma-container">
+      <canvas id="a-firma" width="600" height="180"></canvas>
+    </div>
+    <div class="firma-actions">
+      <button class="btn-clear" onclick="clearFirma('a-firma')">🗑 Borrar Firma</button>
+    </div>
+  </div>
+
+  <button class="btn-submit" onclick="submitForm('armamento')">
+    ✅ Registrar Movimiento de Arma
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- VEHÍCULOS -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-vehiculos">
+  <div class="card">
+    <div class="card-title">Tipo de Movimiento</div>
+    <div class="mov-toggle">
+      <div class="mov-btn entrega active" onclick="setMov('vehiculos','Salida',this)">🚗 Salida</div>
+      <div class="mov-btn devolucion" onclick="setMov('vehiculos','Retorno',this)">🏁 Retorno</div>
+    </div>
+    <input type="hidden" id="v-movimiento" value="Salida">
+  </div>
+
+  <div class="card">
+    <div class="card-title">Conductor</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Conductor *</label>
+        <select id="v-personal" onchange="mostrarPersonal('v')">
+          <option value="">Seleccionar...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Responsable</label>
+        <input type="text" id="v-responsable" placeholder="Quien autoriza">
+      </div>
+    </div>
+    <div class="personal-card" id="v-personal-card">
+      <div class="personal-info" id="v-personal-nombre"></div>
+      <div class="personal-sub" id="v-personal-info"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos del Vehículo</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Placa *</label>
+        <input type="text" id="v-placa" placeholder="Ej: ABC-123" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="v-tipo">
+          <option>Automóvil</option>
+          <option>Camioneta</option>
+          <option>Moto</option>
+          <option>Minivan</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Marca</label>
+        <input type="text" id="v-marca" placeholder="Ej: Toyota">
+      </div>
+      <div class="form-group">
+        <label>Modelo</label>
+        <input type="text" id="v-modelo" placeholder="Ej: Hilux">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>KM Salida</label>
+        <input type="number" id="v-km-salida" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>KM Retorno</label>
+        <input type="number" id="v-km-retorno" placeholder="0">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Checklist de Seguridad</div>
+    <div class="checklist">
+      <div class="check-item" onclick="toggleCheck(this,'v-soat')">
+        <input type="checkbox" id="v-soat">
+        <div class="check-icon">✓</div>
+        <div class="check-label">SOAT</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this,'v-extintor')">
+        <input type="checkbox" id="v-extintor">
+        <div class="check-icon">✓</div>
+        <div class="check-label">Extintor</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this,'v-botiquin')">
+        <input type="checkbox" id="v-botiquin">
+        <div class="check-icon">✓</div>
+        <div class="check-label">Botiquín</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this,'v-gps')">
+        <input type="checkbox" id="v-gps">
+        <div class="check-icon">✓</div>
+        <div class="check-label">GPS</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this,'v-llanta')">
+        <input type="checkbox" id="v-llanta">
+        <div class="check-icon">✓</div>
+        <div class="check-label">Llanta Repuesto</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fotografías del Vehículo</div>
+    <div class="form-row three">
+      <div class="form-group">
+        <label>Frontal</label>
+        <div class="foto-upload" style="padding:12px">
+          <input type="file" accept="image/*" capture="environment" onchange="handleFotoSingle(event,'v-foto-frontal')">
+          <div class="foto-upload-icon" style="font-size:20px">📷</div>
+          <div class="foto-upload-text">Frontal</div>
+        </div>
+        <img id="v-foto-frontal-prev" style="display:none;width:100%;border-radius:8px;margin-top:4px">
+        <input type="hidden" id="v-foto-frontal">
+      </div>
+      <div class="form-group">
+        <label>Posterior</label>
+        <div class="foto-upload" style="padding:12px">
+          <input type="file" accept="image/*" capture="environment" onchange="handleFotoSingle(event,'v-foto-posterior')">
+          <div class="foto-upload-icon" style="font-size:20px">📷</div>
+          <div class="foto-upload-text">Posterior</div>
+        </div>
+        <img id="v-foto-posterior-prev" style="display:none;width:100%;border-radius:8px;margin-top:4px">
+        <input type="hidden" id="v-foto-posterior">
+      </div>
+      <div class="form-group">
+        <label>Kilometraje</label>
+        <div class="foto-upload" style="padding:12px">
+          <input type="file" accept="image/*" capture="environment" onchange="handleFotoSingle(event,'v-foto-km')">
+          <div class="foto-upload-icon" style="font-size:20px">📷</div>
+          <div class="foto-upload-text">KM</div>
+        </div>
+        <img id="v-foto-km-prev" style="display:none;width:100%;border-radius:8px;margin-top:4px">
+        <input type="hidden" id="v-foto-km">
+      </div>
+    </div>
+    <div class="form-row full" style="margin-top:8px">
+      <div class="form-group">
+        <label>Observaciones</label>
+        <textarea id="v-observaciones" placeholder="Observaciones del vehículo..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Firma del Conductor</div>
+    <div class="firma-container">
+      <canvas id="v-firma" width="600" height="180"></canvas>
+    </div>
+    <div class="firma-actions">
+      <button class="btn-clear" onclick="clearFirma('v-firma')">🗑 Borrar Firma</button>
+    </div>
+  </div>
+
+  <button class="btn-submit" onclick="submitForm('vehiculos')">
+    ✅ Registrar Movimiento de Vehículo
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CARNETS -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-carnets">
+  <div class="card">
+    <div class="card-title">Tipo de Movimiento</div>
+    <div class="mov-toggle">
+      <div class="mov-btn entrega active" onclick="setMov('carnets','Entrega',this)">📦 Entrega</div>
+      <div class="mov-btn devolucion" onclick="setMov('carnets','Devolución',this)">↩️ Devolución</div>
+    </div>
+    <input type="hidden" id="c-movimiento" value="Entrega">
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Colaborador *</label>
+        <select id="c-personal" onchange="mostrarPersonal('c')">
+          <option value="">Seleccionar...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Responsable</label>
+        <input type="text" id="c-responsable" placeholder="Quien entrega">
+      </div>
+    </div>
+    <div class="personal-card" id="c-personal-card">
+      <div class="personal-info" id="c-personal-nombre"></div>
+      <div class="personal-sub" id="c-personal-info"></div>
+    </div>
+    <div class="form-row" style="margin-top:12px">
+      <div class="form-group">
+        <label>N° de Carnet</label>
+        <input type="text" id="c-numero" placeholder="Número de carnet">
+      </div>
+      <div class="form-group">
+        <label>Tipo de Carnet</label>
+        <select id="c-tipo">
+          <option>Carnet empresa</option>
+          <option>Credencial SUCAMEC</option>
+          <option>Pase cliente</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="c-estado">
+          <option>Activo</option>
+          <option>Devuelto</option>
+          <option>Extraviado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Observaciones</label>
+        <textarea id="c-observaciones" placeholder="Observaciones..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Firma del Colaborador</div>
+    <div class="firma-container">
+      <canvas id="c-firma" width="600" height="180"></canvas>
+    </div>
+    <div class="firma-actions">
+      <button class="btn-clear" onclick="clearFirma('c-firma')">🗑 Borrar Firma</button>
+    </div>
+  </div>
+
+  <button class="btn-submit" onclick="submitForm('carnets')">
+    ✅ Registrar Movimiento de Carnet
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- HISTORIAL -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-historial">
+  <div class="card">
+    <div class="card-title">Filtrar Historial</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Módulo</label>
+        <select id="hist-tabla" onchange="loadHistorial()">
+          <option value="Uniformes">Uniformes</option>
+          <option value="Armamento">Armamento</option>
+          <option value="Vehiculos">Vehículos</option>
+          <option value="Carnets">Carnets</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Buscar</label>
+        <input type="text" id="hist-buscar" placeholder="Nombre, DNI..." oninput="filtrarHistorial()">
+      </div>
+    </div>
+  </div>
+  <div id="historial-list"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- DASHBOARD -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-dashboard">
+  <div class="card">
+    <div class="card-title">Resumen General</div>
+    <div class="stats-grid" id="dashboard-stats">
+      <div class="stat-card"><div class="stat-number" id="stat-personal">—</div><div class="stat-label">Personal</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-uniformes">—</div><div class="stat-label">Uniformes</div><div class="stat-sub" id="stat-uniformes-pend"></div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-armas">—</div><div class="stat-label">Armas</div><div class="stat-sub" id="stat-armas-pend"></div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-vehiculos">—</div><div class="stat-label">Vehículos</div><div class="stat-sub" id="stat-vehiculos-pend"></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Estado de Activos</div>
+    <div id="dashboard-detalle" style="font-size:13px;color:var(--gray-text);text-align:center;padding:16px">Cargando...</div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Guardando registro...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────
+const API_URL = 'https://script.google.com/macros/s/AKfycbzXdL0HdV64ck0Q7G6PZx9w3HpldWREtkXtCzxP4OSgaQDZlnSUDv9CJJa9b_y6tD6U/exec'; // Se llena después con la URL de Apps Script
+
+// ── ESTADO ────────────────────────────────────────────────
+let personalData = [];
+let historialData = [];
+let fotosData = { u: [], a: [] };
+
+// ── CLOCK ─────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('es-PE', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' ' +
+    now.toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── TABS ──────────────────────────────────────────────────
+function showTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'historial') loadHistorial();
+  if (tab === 'dashboard') loadDashboard();
+}
+
+// ── MOVIMIENTO ────────────────────────────────────────────
+function setMov(modulo, valor, el) {
+  const prefix = { uniformes:'u', armamento:'a', vehiculos:'v', carnets:'c' }[modulo];
+  document.getElementById(prefix + '-movimiento').value = valor;
+  el.parentElement.querySelectorAll('.mov-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── PERSONAL ──────────────────────────────────────────────
+function loadPersonal() {
+  if (!API_URL) {
+    // Modo demo sin API
+    personalData = [
+      { ID_Personal: 'P001', Nombres: 'Juan', Apellidos: 'Pérez García', DNI: '12345678', Cargo: 'Vigilante', Estado: 'Activo' },
+      { ID_Personal: 'P002', Nombres: 'María', Apellidos: 'López Ruiz', DNI: '87654321', Cargo: 'Supervisor', Estado: 'Activo' },
+    ];
+    populatePersonalSelects();
+    return;
+  }
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'getPersonal' })
+  }).then(r => r.json()).then(res => {
+    if (res.ok) { personalData = res.data; populatePersonalSelects(); }
+  }).catch(() => showToast('Sin conexión — modo demo', 'error'));
+}
+
+function populatePersonalSelects() {
+  const selects = ['u-personal','a-personal','v-personal','c-personal'];
+  selects.forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">Seleccionar colaborador...</option>';
+    personalData.forEach(p => {
+      if (p.Estado === 'Activo' || !p.Estado) {
+        const opt = document.createElement('option');
+        opt.value = p.ID_Personal;
+        opt.textContent = `${p.Nombres} ${p.Apellidos} — ${p.DNI}`;
+        opt.dataset.nombres = p.Nombres;
+        opt.dataset.apellidos = p.Apellidos;
+        opt.dataset.dni = p.DNI;
+        opt.dataset.cargo = p.Cargo;
+        sel.appendChild(opt);
+      }
+    });
+  });
+}
+
+function mostrarPersonal(prefix) {
+  const sel = document.getElementById(prefix + '-personal');
+  const card = document.getElementById(prefix + '-personal-card');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt.value) { card.classList.remove('show'); return; }
+  document.getElementById(prefix + '-personal-nombre').textContent =
+    `${opt.dataset.nombres} ${opt.dataset.apellidos}`;
+  document.getElementById(prefix + '-personal-info').textContent =
+    `DNI: ${opt.dataset.dni} | Cargo: ${opt.dataset.cargo}`;
+  card.classList.add('show');
+}
+
+// ── PRENDAS ───────────────────────────────────────────────
+const PRENDAS_TIPOS = ['Polo','Camisa','Pantalón','Chaleco','Casaca','Gorra','Botas','Otro'];
+const PRENDAS_ESTADOS = ['Nuevo','Bueno','Regular','Deteriorado'];
+
+function addPrenda() {
+  const tbody = document.getElementById('u-prendas-body');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>
+      <select style="min-width:100px">
+        ${PRENDAS_TIPOS.map(t => `<option>${t}</option>`).join('')}
+      </select>
+    </td>
+    <td><input type="text" placeholder="M/L/XL" style="width:60px"></td>
+    <td><input type="text" placeholder="Color" style="width:70px"></td>
+    <td><input type="number" value="1" min="1" style="width:50px"></td>
+    <td>
+      <select style="min-width:90px">
+        ${PRENDAS_ESTADOS.map(e => `<option>${e}</option>`).join('')}
+      </select>
+    </td>
+    <td><button class="btn-remove-prenda" onclick="this.closest('tr').remove()">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function getPrendas() {
+  const rows = document.querySelectorAll('#u-prendas-body tr');
+  return Array.from(rows).map(tr => {
+    const cells = tr.querySelectorAll('select,input');
+    return {
+      tipo: cells[0].value,
+      talla: cells[1].value,
+      color: cells[2].value,
+      cantidad: cells[3].value,
+      estado: cells[4].value
+    };
+  });
+}
+
+// ── CHECKLIST ─────────────────────────────────────────────
+function toggleCheck(el, id) {
+  el.classList.toggle('checked');
+  document.getElementById(id).checked = el.classList.contains('checked');
+}
+
+// ── FIRMA ─────────────────────────────────────────────────
+const firmaState = {};
+
+function initFirma(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth || 600;
+
+  let drawing = false;
+  let lastX = 0, lastY = 0;
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    if (e.touches) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
+    }
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  function start(e) {
+    e.preventDefault();
+    drawing = true;
+    const pos = getPos(e);
+    lastX = pos.x; lastY = pos.y;
+  }
+
+  function draw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.strokeStyle = '#1A3A5C';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    lastX = pos.x; lastY = pos.y;
+    firmaState[canvasId] = true;
+  }
+
+  function end() { drawing = false; }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove', draw, { passive: false });
+  canvas.addEventListener('touchend', end);
+}
+
+function clearFirma(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  firmaState[canvasId] = false;
+}
+
+function getFirmaBase64(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!firmaState[canvasId]) return '';
+  return canvas.toDataURL('image/png');
+}
+
+// ── FOTOS ─────────────────────────────────────────────────
+function handleFotos(e, prefix) {
+  const files = e.target.files;
+  const preview = document.getElementById(prefix + '-foto-preview');
+  fotosData[prefix] = [];
+  preview.innerHTML = '';
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      fotosData[prefix].push(ev.target.result);
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+      img.className = 'foto-thumb';
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function handleFotoSingle(e, fieldId) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById(fieldId).value = ev.target.result;
+    const prev = document.getElementById(fieldId + '-prev');
+    if (prev) { prev.src = ev.target.result; prev.style.display = 'block'; }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── SUBMIT ────────────────────────────────────────────────
+async function submitForm(modulo) {
+  const prefix = { uniformes:'u', armamento:'a', vehiculos:'v', carnets:'c' }[modulo];
+  const personal = document.getElementById(prefix + '-personal').value;
+  if (!personal) { showToast('⚠️ Selecciona un colaborador', 'error'); return; }
+
+  showLoading(true);
+  const btn = document.querySelector(`#page-${modulo} .btn-submit`);
+  btn.disabled = true;
+
+  let data = { action: '', id_personal: personal };
+
+  if (modulo === 'uniformes') {
+    const prendas = getPrendas();
+    if (prendas.length === 0) {
+      showToast('⚠️ Agrega al menos una prenda', 'error');
+      showLoading(false); btn.disabled = false; return;
+    }
+    data.action = 'saveUniforme';
+    data.responsable = document.getElementById('u-responsable').value;
+    data.movimiento = document.getElementById('u-movimiento').value;
+    data.observaciones = document.getElementById('u-observaciones').value;
+    data.prendas = prendas;
+    data.foto = fotosData.u[0] || '';
+    data.firma = getFirmaBase64('u-firma');
+  }
+  else if (modulo === 'armamento') {
+    data.action = 'saveArmamento';
+    data.responsable_armeria = document.getElementById('a-responsable').value;
+    data.marca = document.getElementById('a-marca').value;
+    data.modelo = document.getElementById('a-modelo').value;
+    data.serie = document.getElementById('a-serie').value;
+    data.tipo_arma = document.getElementById('a-tipo').value;
+    data.estado_arma = document.getElementById('a-estado').value;
+    data.municion_entregada = document.getElementById('a-mun-entregada').value;
+    data.municion_devuelta = document.getElementById('a-mun-devuelta').value;
+    data.movimiento = document.getElementById('a-movimiento').value;
+    data.observaciones = document.getElementById('a-observaciones').value;
+    data.foto = fotosData.a[0] || '';
+    data.firma = getFirmaBase64('a-firma');
+  }
+  else if (modulo === 'vehiculos') {
+    data.action = 'saveVehiculo';
+    data.responsable = document.getElementById('v-responsable').value;
+    data.placa = document.getElementById('v-placa').value.toUpperCase();
+    data.tipo_vehiculo = document.getElementById('v-tipo').value;
+    data.marca = document.getElementById('v-marca').value;
+    data.modelo = document.getElementById('v-modelo').value;
+    data.km_salida = document.getElementById('v-km-salida').value;
+    data.km_retorno = document.getElementById('v-km-retorno').value;
+    data.soat = document.getElementById('v-soat').checked;
+    data.extintor = document.getElementById('v-extintor').checked;
+    data.botiquin = document.getElementById('v-botiquin').checked;
+    data.gps = document.getElementById('v-gps').checked;
+    data.llanta_repuesto = document.getElementById('v-llanta').checked;
+    data.movimiento = document.getElementById('v-movimiento').value;
+    data.observaciones = document.getElementById('v-observaciones').value;
+    data.foto_frontal = document.getElementById('v-foto-frontal').value;
+    data.foto_posterior = document.getElementById('v-foto-posterior').value;
+    data.foto_km = document.getElementById('v-foto-km').value;
+    data.firma = getFirmaBase64('v-firma');
+  }
+  else if (modulo === 'carnets') {
+    data.action = 'saveCarnet';
+    data.responsable = document.getElementById('c-responsable').value;
+    data.numero_carnet = document.getElementById('c-numero').value;
+    data.tipo_carnet = document.getElementById('c-tipo').value;
+    data.estado = document.getElementById('c-estado').value;
+    data.movimiento = document.getElementById('c-movimiento').value;
+    data.observaciones = document.getElementById('c-observaciones').value;
+    data.firma = getFirmaBase64('c-firma');
+  }
+
+  try {
+    if (!API_URL) {
+      // Modo demo — simula guardado
+      await new Promise(r => setTimeout(r, 1200));
+      showToast('✅ Registro guardado (modo demo)', 'success');
+      resetForm(modulo, prefix);
+    } else {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if (result.ok) {
+        showToast(`✅ Registro guardado — ID: ${result.id}`, 'success');
+        resetForm(modulo, prefix);
+      } else {
+        throw new Error(result.error || 'Error desconocido');
+      }
+    }
+  } catch (err) {
+    showToast('❌ Error: ' + err.message, 'error');
+  } finally {
+    showLoading(false);
+    btn.disabled = false;
+  }
+}
+
+function resetForm(modulo, prefix) {
+  document.getElementById(prefix + '-personal').value = '';
+  document.getElementById(prefix + '-personal-card').classList.remove('show');
+  if (prefix === 'u') {
+    document.getElementById('u-responsable').value = '';
+    document.getElementById('u-observaciones').value = '';
+    document.getElementById('u-prendas-body').innerHTML = '';
+    document.getElementById('u-foto-preview').innerHTML = '';
+    fotosData.u = [];
+  }
+  clearFirma(prefix + '-firma');
+}
+
+// ── HISTORIAL ─────────────────────────────────────────────
+function loadHistorial() {
+  const tabla = document.getElementById('hist-tabla').value;
+  const list = document.getElementById('historial-list');
+  list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray-text)">Cargando...</div>';
+
+  if (!API_URL) {
+    historialData = [];
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray-text)">Configura la URL del API para ver el historial</div>';
+    return;
+  }
+
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'getHistorial', tabla })
+  }).then(r => r.json()).then(res => {
+    if (res.ok) {
+      historialData = res.data;
+      filtrarHistorial();
+    }
+  }).catch(() => {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--red)">Sin conexión</div>';
+  });
+}
+
+function filtrarHistorial() {
+  const buscar = document.getElementById('hist-buscar').value.toLowerCase();
+  const lista = historialData.filter(r =>
+    JSON.stringify(r).toLowerCase().includes(buscar)
+  );
+  renderHistorial(lista);
+}
+
+function renderHistorial(data) {
+  const list = document.getElementById('historial-list');
+  if (!data.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray-text)">No hay registros</div>';
+    return;
+  }
+  list.innerHTML = data.slice(0, 50).map(r => {
+    const mov = Object.values(r).find(v => ['Entrega','Devolución','Salida','Retorno','Renovación'].includes(v)) || '';
+    const clase = mov.toLowerCase().includes('devolu') || mov.toLowerCase().includes('retorno') ? 'devolucion' :
+                  mov.toLowerCase().includes('renova') ? 'renovacion' : '';
+    const tagClass = clase || 'entrega';
+    const fecha = r.Fecha || '';
+    const personal = r.ID_Personal || '';
+    return `
+      <div class="historial-item ${clase}">
+        <div class="hist-header">
+          <div class="hist-nombre">${personal}</div>
+          <div class="hist-fecha">${fecha}</div>
+        </div>
+        <div class="hist-tags">
+          <span class="tag ${tagClass}">${mov}</span>
+          ${Object.entries(r).slice(0,6).filter(([k,v]) => v && !['ID_Uniforme','ID_Arma_Movimiento','ID_Vehiculo_Mov','ID_Carnet_Mov','Firma','Foto','PDF_Acta','ID_Personal','Fecha'].includes(k)).map(([k,v]) => `<span class="tag">${v}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────
+function loadDashboard() {
+  if (!API_URL) {
+    document.getElementById('stat-personal').textContent = '—';
+    document.getElementById('dashboard-detalle').textContent = 'Configura la URL del API para ver estadísticas';
+    return;
+  }
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'getDashboard' })
+  }).then(r => r.json()).then(res => {
+    if (!res.ok) return;
+    const d = res.data;
+    document.getElementById('stat-personal').textContent = d.totalPersonal || 0;
+    document.getElementById('stat-uniformes').textContent = d.Uniformes?.entregas || 0;
+    document.getElementById('stat-uniformes-pend').textContent = d.Uniformes?.pendientes ? `${d.Uniformes.pendientes} pendientes` : '';
+    document.getElementById('stat-armas').textContent = d.Armamento?.entregas || 0;
+    document.getElementById('stat-armas-pend').textContent = d.Armamento?.pendientes ? `${d.Armamento.pendientes} pendientes` : '';
+    document.getElementById('stat-vehiculos').textContent = d.Vehiculos?.entregas || 0;
+    document.getElementById('stat-vehiculos-pend').textContent = d.Vehiculos?.pendientes ? `${d.Vehiculos.pendientes} en uso` : '';
+
+    document.getElementById('dashboard-detalle').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left">
+        ${['Uniformes','Armamento','Vehiculos','Carnets'].map(t => `
+          <div style="background:var(--gray-bg);border-radius:8px;padding:12px">
+            <div style="font-weight:700;color:var(--navy);margin-bottom:6px">${t}</div>
+            <div style="font-size:12px">Entregas: <b>${d[t]?.entregas||0}</b></div>
+            <div style="font-size:12px">Devoluciones: <b>${d[t]?.devoluciones||0}</b></div>
+            <div style="font-size:12px;color:var(--red)">Pendientes: <b>${d[t]?.pendientes||0}</b></div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).catch(() => {
+    document.getElementById('dashboard-detalle').textContent = 'Sin conexión';
+  });
+}
+
+// ── UI HELPERS ────────────────────────────────────────────
+function showLoading(show) {
+  document.getElementById('loading').classList.toggle('show', show);
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── INIT ──────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  ['u-firma','a-firma','v-firma','c-firma'].forEach(initFirma);
+  addPrenda(); // Agregar primera fila de prenda
+  loadPersonal();
+});
+</script>
+</body>
+</html>
