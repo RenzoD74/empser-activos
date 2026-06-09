@@ -141,6 +141,18 @@
   .loading-text { color: var(--white); font-weight: 700; font-size: 14px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* SEARCHABLE SELECT */
+  .search-select-wrapper { position: relative; }
+  .search-select-input { border: 1.5px solid var(--gray-border); border-radius: 8px; padding: 10px 12px; font-size: 14px; color: var(--navy-dark); background: var(--white); width: 100%; outline: none; cursor: pointer; }
+  .search-select-input:focus { border-color: var(--navy-light); }
+  .search-select-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: var(--white); border: 1.5px solid var(--navy-light); border-radius: 8px; z-index: 999; max-height: 220px; overflow-y: auto; box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: none; }
+  .search-select-dropdown.open { display: block; }
+  .search-select-option { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--gray-border); }
+  .search-select-option:hover { background: var(--gray-bg); color: var(--navy); }
+  .search-select-option.selected { background: var(--navy); color: var(--white); }
+  .search-select-option:last-child { border-bottom: none; }
+  .search-select-empty { padding: 10px 14px; font-size: 13px; color: var(--gray-text); font-style: italic; }
+
   /* PERSONAL SELECTOR */
   .personal-card { background: var(--gray-bg); border-radius: 8px; padding: 10px 14px; margin-top: 4px; display: none; }
   .personal-card.show { display: block; }
@@ -194,9 +206,15 @@
     <div class="form-row">
       <div class="form-group">
         <label>Colaborador *</label>
-        <select id="u-personal" onchange="mostrarPersonal('u')">
-          <option value="">Seleccionar...</option>
-        </select>
+        <div class="search-select-wrapper">
+          <input type="text" class="search-select-input" id="u-personal-search" 
+            placeholder="Buscar por nombre o DNI..." 
+            oninput="filtrarPersonal('u')" 
+            onclick="abrirDropdown('u')"
+            autocomplete="off">
+          <input type="hidden" id="u-personal">
+          <div class="search-select-dropdown" id="u-personal-dropdown"></div>
+        </div>
       </div>
       <div class="form-group">
         <label>Responsable *</label>
@@ -277,9 +295,15 @@
     <div class="form-row">
       <div class="form-group">
         <label>Colaborador *</label>
-        <select id="a-personal" onchange="mostrarPersonal('a')">
-          <option value="">Seleccionar...</option>
-        </select>
+        <div class="search-select-wrapper">
+          <input type="text" class="search-select-input" id="a-personal-search" 
+            placeholder="Buscar por nombre o DNI..." 
+            oninput="filtrarPersonal('a')" 
+            onclick="abrirDropdown('a')"
+            autocomplete="off">
+          <input type="hidden" id="a-personal">
+          <div class="search-select-dropdown" id="a-personal-dropdown"></div>
+        </div>
       </div>
       <div class="form-group">
         <label>Responsable Armería *</label>
@@ -390,9 +414,15 @@
     <div class="form-row">
       <div class="form-group">
         <label>Conductor *</label>
-        <select id="v-personal" onchange="mostrarPersonal('v')">
-          <option value="">Seleccionar...</option>
-        </select>
+        <div class="search-select-wrapper">
+          <input type="text" class="search-select-input" id="v-personal-search" 
+            placeholder="Buscar por nombre o DNI..." 
+            oninput="filtrarPersonal('v')" 
+            onclick="abrirDropdown('v')"
+            autocomplete="off">
+          <input type="hidden" id="v-personal">
+          <div class="search-select-dropdown" id="v-personal-dropdown"></div>
+        </div>
       </div>
       <div class="form-group">
         <label>Responsable</label>
@@ -550,9 +580,15 @@
     <div class="form-row">
       <div class="form-group">
         <label>Colaborador *</label>
-        <select id="c-personal" onchange="mostrarPersonal('c')">
-          <option value="">Seleccionar...</option>
-        </select>
+        <div class="search-select-wrapper">
+          <input type="text" class="search-select-input" id="c-personal-search" 
+            placeholder="Buscar por nombre o DNI..." 
+            oninput="filtrarPersonal('c')" 
+            onclick="abrirDropdown('c')"
+            autocomplete="off">
+          <input type="hidden" id="c-personal">
+          <div class="search-select-dropdown" id="c-personal-dropdown"></div>
+        </div>
       </div>
       <div class="form-group">
         <label>Responsable</label>
@@ -573,6 +609,7 @@
         <select id="c-tipo">
           <option>Carnet empresa</option>
           <option>Credencial SUCAMEC</option>
+          <option>Licencia de Armas</option>
           <option>Pase cliente</option>
           <option>Otro</option>
         </select>
@@ -594,6 +631,16 @@
         <textarea id="c-observaciones" placeholder="Observaciones..."></textarea>
       </div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fotografía (evidencia)</div>
+    <div class="foto-upload" id="c-foto-upload">
+      <input type="file" accept="image/*" capture="environment" onchange="handleFotos(event,'c')">
+      <div class="foto-upload-icon">📷</div>
+      <div class="foto-upload-text">Toca para tomar foto del carnet</div>
+    </div>
+    <div class="foto-preview" id="c-foto-preview"></div>
   </div>
 
   <div class="card">
@@ -671,7 +718,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzXdL0HdV64ck0Q7G6PZx9w
 // ── ESTADO ────────────────────────────────────────────────
 let personalData = [];
 let historialData = [];
-let fotosData = { u: [], a: [] };
+let fotosData = { u: [], a: [], v: [], c: [] };
 
 // ── CLOCK ─────────────────────────────────────────────────
 function updateClock() {
@@ -721,24 +768,71 @@ function loadPersonal() {
 }
 
 function populatePersonalSelects() {
-  const selects = ['u-personal','a-personal','v-personal','c-personal'];
-  selects.forEach(id => {
-    const sel = document.getElementById(id);
-    sel.innerHTML = '<option value="">Seleccionar colaborador...</option>';
-    personalData.forEach(p => {
-      if (p.Estado === 'Activo' || !p.Estado) {
-        const opt = document.createElement('option');
-        opt.value = p.ID_Personal;
-        opt.textContent = `${p.Nombres} ${p.Apellidos} — ${p.DNI}`;
-        opt.dataset.nombres = p.Nombres;
-        opt.dataset.apellidos = p.Apellidos;
-        opt.dataset.dni = p.DNI;
-        opt.dataset.cargo = p.Cargo;
-        sel.appendChild(opt);
-      }
-    });
-  });
+  ['u','a','v','c'].forEach(prefix => renderDropdown(prefix, ''));
 }
+
+function filtrarPersonal(prefix) {
+  const q = document.getElementById(prefix + '-personal-search').value;
+  renderDropdown(prefix, q);
+  abrirDropdown(prefix);
+  // Si borran el input, limpiar selección
+  if (!q) {
+    document.getElementById(prefix + '-personal').value = '';
+    document.getElementById(prefix + '-personal-card').classList.remove('show');
+  }
+}
+
+function renderDropdown(prefix, query) {
+  const dropdown = document.getElementById(prefix + '-personal-dropdown');
+  if (!dropdown) return;
+  const q = query.toLowerCase().trim();
+  const filtrados = personalData.filter(p => {
+    if (p.Estado && p.Estado.toString().toUpperCase() !== 'ACTIVO') return false;
+    const nombre = `${p.Nombres||''} ${p.Apellidos||''}`.toLowerCase();
+    const dni = (p.DNI||'').toString().toLowerCase();
+    return !q || nombre.includes(q) || dni.includes(q);
+  });
+
+  if (!filtrados.length) {
+    dropdown.innerHTML = '<div class="search-select-empty">No se encontraron resultados</div>';
+    return;
+  }
+
+  const currentVal = document.getElementById(prefix + '-personal').value;
+  dropdown.innerHTML = filtrados.map(p => {
+    const nombre = `${p.Nombres||''} ${p.Apellidos||''}`.trim();
+    const selected = p.ID_Personal == currentVal ? ' selected' : '';
+    return `<div class="search-select-option${selected}" 
+      onclick="seleccionarPersonal('${prefix}', '${p.ID_Personal}', '${nombre}', '${p.DNI||''}', '${p.Cargo||''}')">
+      <strong>${nombre}</strong><br>
+      <span style="font-size:11px;color:var(--gray-text)">DNI: ${p.DNI||''} | ${p.Cargo||''}</span>
+    </div>`;
+  }).join('');
+}
+
+function abrirDropdown(prefix) {
+  const dropdown = document.getElementById(prefix + '-personal-dropdown');
+  if (dropdown) dropdown.classList.add('open');
+}
+
+function cerrarDropdowns() {
+  document.querySelectorAll('.search-select-dropdown').forEach(d => d.classList.remove('open'));
+}
+
+function seleccionarPersonal(prefix, id, nombre, dni, cargo) {
+  document.getElementById(prefix + '-personal').value = id;
+  document.getElementById(prefix + '-personal-search').value = nombre + ' — ' + dni;
+  cerrarDropdowns();
+  // Mostrar card
+  document.getElementById(prefix + '-personal-nombre').textContent = nombre;
+  document.getElementById(prefix + '-personal-info').textContent = `DNI: ${dni} | Cargo: ${cargo}`;
+  document.getElementById(prefix + '-personal-card').classList.add('show');
+}
+
+// Cerrar dropdown al hacer clic fuera
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-select-wrapper')) cerrarDropdowns();
+});
 
 function mostrarPersonal(prefix) {
   const sel = document.getElementById(prefix + '-personal');
@@ -972,6 +1066,7 @@ async function submitForm(modulo) {
     data.estado = document.getElementById('c-estado').value;
     data.movimiento = document.getElementById('c-movimiento').value;
     data.observaciones = document.getElementById('c-observaciones').value;
+    data.foto = fotosData.c && fotosData.c[0] ? fotosData.c[0] : '';
     data.firma = getFirmaBase64('c-firma');
   }
 
@@ -1003,15 +1098,68 @@ async function submitForm(modulo) {
 }
 
 function resetForm(modulo, prefix) {
+  // Reset personal selector
   document.getElementById(prefix + '-personal').value = '';
+  const searchInput = document.getElementById(prefix + '-personal-search');
+  if (searchInput) searchInput.value = '';
   document.getElementById(prefix + '-personal-card').classList.remove('show');
-  if (prefix === 'u') {
-    document.getElementById('u-responsable').value = '';
-    document.getElementById('u-observaciones').value = '';
-    document.getElementById('u-prendas-body').innerHTML = '';
-    document.getElementById('u-foto-preview').innerHTML = '';
-    fotosData.u = [];
+
+  // Reset todos los campos de texto del módulo
+  const page = document.getElementById('page-' + modulo);
+  if (page) {
+    page.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(el => {
+      if (!el.id.includes('-personal-search') && !el.classList.contains('search-select-input')) {
+        el.value = '';
+      }
+    });
   }
+
+  // Reset fotos
+  if (fotosData[prefix] !== undefined) fotosData[prefix] = [];
+  const fotoPreview = document.getElementById(prefix + '-foto-preview');
+  if (fotoPreview) fotoPreview.innerHTML = '';
+
+  // Reset fotos de vehículos
+  if (prefix === 'v') {
+    ['v-foto-frontal','v-foto-posterior','v-foto-km'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+      const prev = document.getElementById(id + '-prev');
+      if (prev) { prev.src = ''; prev.style.display = 'none'; }
+    });
+    // Reset checklist
+    document.querySelectorAll('#page-vehiculos .check-item').forEach(el => {
+      el.classList.remove('checked');
+    });
+    ['v-soat','v-extintor','v-botiquin','v-gps','v-llanta'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.checked = false;
+    });
+    // Reset firma vehiculo
+    clearFirma('v-firma');
+    // Reset movimiento a Salida
+    const vMovBtns = document.querySelectorAll('#page-vehiculos .mov-btn');
+    if (vMovBtns.length > 0) {
+      vMovBtns.forEach(b => b.classList.remove('active'));
+      vMovBtns[0].classList.add('active');
+      document.getElementById('v-movimiento').value = 'Salida';
+    }
+  }
+
+  // Reset prendas
+  if (prefix === 'u') {
+    document.getElementById('u-prendas-body').innerHTML = '';
+    addPrenda();
+  }
+
+  // Reset movimiento al primer botón
+  const movBtns = document.querySelectorAll('#page-' + modulo + ' .mov-btn');
+  movBtns.forEach((btn, i) => {
+    btn.classList.remove('active');
+    if (i === 0) btn.classList.add('active');
+  });
+
+  // Reset firma
   clearFirma(prefix + '-firma');
 }
 
