@@ -832,7 +832,7 @@
   </div>
 
   <div class="card">
-    <div class="card-title">Datos Generales</div>
+    <div class="card-title">1. Datos Generales</div>
     <div class="form-row">
       <div class="form-group">
         <label>Apellidos y Nombres *</label>
@@ -841,6 +841,19 @@
       <div class="form-group">
         <label>DNI *</label>
         <input type="text" id="dj-dni" placeholder="00000000" maxlength="8">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sexo</label>
+        <select id="dj-sexo">
+          <option value="M">Masculino</option>
+          <option value="F">Femenino</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nacionalidad</label>
+        <input type="text" id="dj-nacionalidad" placeholder="PERUANA" value="PERUANA" style="text-transform:uppercase">
       </div>
     </div>
     <div class="form-row">
@@ -859,10 +872,20 @@
         </select>
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Licencia de Conducir</label>
+        <input type="text" id="dj-licencia" placeholder="Nro. licencia">
+      </div>
+      <div class="form-group">
+        <label>Vencimiento Licencia</label>
+        <input type="date" id="dj-vto-licencia">
+      </div>
+    </div>
     <div class="form-row full">
       <div class="form-group">
-        <label>Dirección</label>
-        <input type="text" id="dj-domicilio" placeholder="Calle, Jirón, Manzana, Lote..." style="text-transform:uppercase">
+        <label>Dirección (Calle, Jirón, Mz, Lote...)</label>
+        <input type="text" id="dj-domicilio" placeholder="Dirección completa" style="text-transform:uppercase">
       </div>
     </div>
     <div class="form-row">
@@ -871,7 +894,7 @@
         <input type="text" id="dj-distrito" placeholder="Distrito" style="text-transform:uppercase">
       </div>
       <div class="form-group">
-        <label>Teléfono / Celular</label>
+        <label>Celular</label>
         <input type="text" id="dj-celular" placeholder="9XXXXXXXX">
       </div>
     </div>
@@ -884,7 +907,7 @@
   </div>
 
   <div class="card">
-    <div class="card-title">Sistema de Pensiones y Banco</div>
+    <div class="card-title">2. Sistema de Pensiones y Banco</div>
     <div class="form-row">
       <div class="form-group">
         <label>AFP / Sistema Pensiones</label>
@@ -913,14 +936,14 @@
     </div>
     <div class="form-row full">
       <div class="form-group">
-        <label>Número de Cuenta</label>
+        <label>Número de Cuenta Haberes</label>
         <input type="text" id="dj-cuenta" placeholder="Número de cuenta bancaria">
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Apariencia Física (Tallas)</div>
+    <div class="card-title">3. Información Médica y Tallas</div>
     <div class="form-row">
       <div class="form-group">
         <label>Grupo Sanguíneo</label>
@@ -933,8 +956,31 @@
         </select>
       </div>
       <div class="form-group">
+        <label>¿Tiene discapacidad?</label>
+        <select id="dj-discapacidad">
+          <option value="No">No</option>
+          <option value="Sí">Sí</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Accidentes / Intervenciones Quirúrgicas</label>
+        <input type="text" id="dj-accidentes" placeholder="Indicar tipo o escribir NO" style="text-transform:uppercase">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
         <label>Talla Camisa</label>
         <select id="dj-camisa">
+          <option value="">---</option>
+          <option>XS</option><option>S</option><option>M</option>
+          <option>L</option><option>XL</option><option>XXL</option><option>XXXL</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Talla Casaca</label>
+        <select id="dj-casaca">
           <option value="">---</option>
           <option>XS</option><option>S</option><option>M</option>
           <option>L</option><option>XL</option><option>XXL</option><option>XXXL</option>
@@ -951,28 +997,86 @@
         <input type="text" id="dj-zapatos" placeholder="Ej: 40, 41, 42">
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Talla Casaca</label>
-        <select id="dj-casaca">
-          <option value="">---</option>
-          <option>XS</option><option>S</option><option>M</option>
-          <option>L</option><option>XL</option><option>XXL</option><option>XXXL</option>
-        </select>
+  </div>
+
+  <div class="card">
+    <div class="card-title">4. Datos Familiares Dependientes</div>
+    <div style="font-size:11px;color:var(--gray-text);margin-bottom:8px">Hijos menores de 18 años o hasta 24 años con estudios superiores</div>
+    <div id="dj-familiares-lista">
+      <div class="form-row" style="margin-bottom:6px">
+        <div class="form-group"><label>Nombre Completo</label><input type="text" id="dj-fam1-nombre" placeholder="Apellidos y nombres" style="text-transform:uppercase"></div>
+        <div class="form-group"><label>Fecha Nacimiento</label><input type="date" id="dj-fam1-fecha"></div>
+        <div class="form-group"><label>DNI</label><input type="text" id="dj-fam1-dni" placeholder="DNI" maxlength="8"></div>
+      </div>
+      <div class="form-row" style="margin-bottom:6px">
+        <div class="form-group"><label>Nombre Completo</label><input type="text" id="dj-fam2-nombre" placeholder="Apellidos y nombres" style="text-transform:uppercase"></div>
+        <div class="form-group"><label>Fecha Nacimiento</label><input type="date" id="dj-fam2-fecha"></div>
+        <div class="form-group"><label>DNI</label><input type="text" id="dj-fam2-dni" placeholder="DNI" maxlength="8"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Nombre Completo</label><input type="text" id="dj-fam3-nombre" placeholder="Apellidos y nombres" style="text-transform:uppercase"></div>
+        <div class="form-group"><label>Fecha Nacimiento</label><input type="date" id="dj-fam3-fecha"></div>
+        <div class="form-group"><label>DNI</label><input type="text" id="dj-fam3-dni" placeholder="DNI" maxlength="8"></div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Contacto de Emergencia</div>
+    <div class="card-title">5. Contacto de Emergencia</div>
     <div class="form-row">
       <div class="form-group">
-        <label>Nombre</label>
+        <label>Apellidos y Nombres</label>
         <input type="text" id="dj-emergencia-nombre" placeholder="Nombre completo" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>Vínculo Familiar</label>
+        <select id="dj-emergencia-vinculo">
+          <option>Cónyuge</option>
+          <option>Padres</option>
+          <option>Hermano/a</option>
+          <option>Hijo/a</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>DNI Contacto</label>
+        <input type="text" id="dj-emergencia-dni" placeholder="DNI" maxlength="8">
       </div>
       <div class="form-group">
         <label>Teléfono</label>
         <input type="text" id="dj-emergencia-tel" placeholder="9XXXXXXXX">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha Nacimiento Contacto</label>
+        <input type="date" id="dj-emergencia-fn">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">6. Parientes Empleados en la Empresa</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Apellidos y Nombres</label>
+        <input type="text" id="dj-pariente-nombre" placeholder="Nombre del pariente" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>Parentesco</label>
+        <input type="text" id="dj-pariente-parentesco" placeholder="Hermano, Primo, etc." style="text-transform:uppercase">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ocupación</label>
+        <input type="text" id="dj-pariente-ocupacion" placeholder="Cargo o puesto" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>Departamento</label>
+        <input type="text" id="dj-pariente-depto" placeholder="Área o sede" style="text-transform:uppercase">
       </div>
     </div>
   </div>
@@ -1740,27 +1844,46 @@ async function submitDeclaracion() {
   if (!nombre || !dni) { showToast('⚠️ Nombre y DNI son obligatorios', 'error'); return; }
 
   showLoading(true);
+  const g = id => document.getElementById(id);
   const data = {
     action: 'saveDeclaracionJurada',
     nombre_completo: nombre.toUpperCase(),
     dni,
-    fecha_nacimiento: formatDateForDisplay(document.getElementById('dj-nacimiento').value),
-    estado_civil: document.getElementById('dj-estado-civil').value,
-    domicilio: document.getElementById('dj-domicilio').value.toUpperCase(),
-    distrito: document.getElementById('dj-distrito').value.toUpperCase(),
-    celular: document.getElementById('dj-celular').value,
-    correo: document.getElementById('dj-correo').value,
-    afp: document.getElementById('dj-afp').value,
-    banco: document.getElementById('dj-banco').value,
-    cuenta_bancaria: document.getElementById('dj-cuenta').value,
-    grupo_sanguineo: document.getElementById('dj-sangre').value,
-    talla_camisa: document.getElementById('dj-camisa').value,
-    talla_pantalon: document.getElementById('dj-pantalon').value,
-    talla_zapatos: document.getElementById('dj-zapatos').value,
-    talla_casaca: document.getElementById('dj-casaca').value,
-    contacto_emergencia: document.getElementById('dj-emergencia-nombre').value.toUpperCase(),
-    tel_emergencia: document.getElementById('dj-emergencia-tel').value,
-    tipo_empresa: document.getElementById('dj-empresa').value
+    sexo: g('dj-sexo').value,
+    nacionalidad: g('dj-nacionalidad').value.toUpperCase(),
+    fecha_nacimiento: formatDateForDisplay(g('dj-nacimiento').value),
+    estado_civil: g('dj-estado-civil').value,
+    licencia_conducir: g('dj-licencia').value,
+    vto_licencia: formatDateForDisplay(g('dj-vto-licencia').value),
+    domicilio: g('dj-domicilio').value.toUpperCase(),
+    distrito: g('dj-distrito').value.toUpperCase(),
+    celular: g('dj-celular').value,
+    correo: g('dj-correo').value,
+    afp: g('dj-afp').value,
+    banco: g('dj-banco').value,
+    cuenta_bancaria: g('dj-cuenta').value,
+    grupo_sanguineo: g('dj-sangre').value,
+    discapacidad: g('dj-discapacidad').value,
+    accidentes: g('dj-accidentes').value.toUpperCase() || 'NO',
+    talla_camisa: g('dj-camisa').value,
+    talla_pantalon: g('dj-pantalon').value,
+    talla_zapatos: g('dj-zapatos').value,
+    talla_casaca: g('dj-casaca').value,
+    familiares: [
+      { nombre: g('dj-fam1-nombre').value.toUpperCase(), nacimiento: formatDateForDisplay(g('dj-fam1-fecha').value), dni: g('dj-fam1-dni').value },
+      { nombre: g('dj-fam2-nombre').value.toUpperCase(), nacimiento: formatDateForDisplay(g('dj-fam2-fecha').value), dni: g('dj-fam2-dni').value },
+      { nombre: g('dj-fam3-nombre').value.toUpperCase(), nacimiento: formatDateForDisplay(g('dj-fam3-fecha').value), dni: g('dj-fam3-dni').value },
+    ],
+    contacto_emergencia: g('dj-emergencia-nombre').value.toUpperCase(),
+    vinculo_emergencia: g('dj-emergencia-vinculo').value,
+    dni_emergencia: g('dj-emergencia-dni').value,
+    tel_emergencia: g('dj-emergencia-tel').value,
+    fn_emergencia: formatDateForDisplay(g('dj-emergencia-fn').value),
+    pariente_nombre: g('dj-pariente-nombre').value.toUpperCase(),
+    pariente_parentesco: g('dj-pariente-parentesco').value.toUpperCase(),
+    pariente_ocupacion: g('dj-pariente-ocupacion').value.toUpperCase(),
+    pariente_depto: g('dj-pariente-depto').value.toUpperCase(),
+    tipo_empresa: g('dj-empresa').value
   };
 
   try {
@@ -1795,7 +1918,7 @@ function resetContrato() {
 }
 
 function resetDJ() {
-  ['dj-nombre','dj-dni','dj-domicilio','dj-distrito','dj-celular','dj-correo','dj-cuenta','dj-pantalon','dj-zapatos','dj-emergencia-nombre','dj-emergencia-tel'].forEach(id => {
+  ['dj-nombre','dj-dni','dj-domicilio','dj-distrito','dj-celular','dj-correo','dj-cuenta','dj-pantalon','dj-zapatos','dj-emergencia-nombre','dj-emergencia-tel','dj-licencia','dj-accidentes','dj-emergencia-dni','dj-fam1-nombre','dj-fam1-dni','dj-fam2-nombre','dj-fam2-dni','dj-fam3-nombre','dj-fam3-dni','dj-pariente-nombre','dj-pariente-parentesco','dj-pariente-ocupacion','dj-pariente-depto','dj-nacionalidad'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
