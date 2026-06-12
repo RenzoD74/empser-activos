@@ -185,6 +185,8 @@
   <div class="tab" onclick="showTab('carnets')">🪪 Carnets</div>
   <div class="tab" onclick="showTab('historial')">📋 Historial</div>
   <div class="tab" onclick="showTab('dashboard')">📊 Dashboard</div>
+  <div class="tab" onclick="showTab('contratos')">📝 Contratos</div>
+  <div class="tab" onclick="showTab('declaraciones')">📋 Declarac. Jurada</div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════ -->
@@ -707,6 +709,293 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- CONTRATOS -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-contratos">
+
+  <div class="card">
+    <div class="card-title">Tipo de Empresa</div>
+    <div class="mov-toggle">
+      <div class="mov-btn entrega active" onclick="setEmpresaContrato('SECURITY & TRANSPORT S.A.C.',this)">🏢 Security & Transport</div>
+      <div class="mov-btn devolucion" onclick="setEmpresaContrato('EMPSER S.A.C.',this)">🏢 EMPSER</div>
+    </div>
+    <input type="hidden" id="ct-empresa" value="SECURITY & TRANSPORT S.A.C.">
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos del Trabajador</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre Completo *</label>
+        <input type="text" id="ct-nombre" placeholder="Apellidos y Nombres" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>DNI *</label>
+        <input type="text" id="ct-dni" placeholder="00000000" maxlength="8">
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Domicilio *</label>
+        <input type="text" id="ct-domicilio" placeholder="Calle, Jirón, Manzana..." style="text-transform:uppercase">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="text" id="ct-telefono" placeholder="9XXXXXXXX">
+      </div>
+      <div class="form-group">
+        <label>Correo Electrónico</label>
+        <input type="text" id="ct-correo" placeholder="correo@email.com">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos del Contrato</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cargo *</label>
+        <select id="ct-cargo">
+          <option>RESGUARDO</option>
+          <option>CONDUCTOR</option>
+          <option>CABINERO</option>
+          <option>MOTORIZADO</option>
+          <option>SUPERVISOR</option>
+          <option>VIGILANTE</option>
+          <option>OTRO</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Meses de Duración *</label>
+        <select id="ct-meses" onchange="calcularFechaFin()">
+          <option value="1">1 mes</option>
+          <option value="2">2 meses</option>
+          <option value="3" selected>3 meses</option>
+          <option value="4">4 meses</option>
+          <option value="6">6 meses</option>
+          <option value="12">12 meses</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha de Inicio *</label>
+        <input type="date" id="ct-fecha-inicio" onchange="calcularFechaFin()">
+      </div>
+      <div class="form-group">
+        <label>Fecha de Fin</label>
+        <input type="date" id="ct-fecha-fin" readonly style="background:#F4F6F9">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sueldo Mensual S/ *</label>
+        <input type="text" id="ct-sueldo" placeholder="1,130.00" value="1,130.00">
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-submit" onclick="submitContrato()">
+    📄 Generar Contrato MYPE
+  </button>
+
+  <div style="height:24px"></div>
+
+  <!-- Listado de contratos generados -->
+  <div class="card">
+    <div class="card-title">Contratos Generados</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Buscar</label>
+        <input type="text" id="ct-buscar" placeholder="Nombre o DNI..." oninput="filtrarContratos()">
+      </div>
+    </div>
+    <div id="ct-lista"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- DECLARACIONES JURADAS -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-declaraciones">
+
+  <div class="card">
+    <div class="card-title">Tipo de Empresa</div>
+    <div class="mov-toggle">
+      <div class="mov-btn entrega active" onclick="setEmpresaDJ('SECURITY & TRANSPORT S.A.C.',this)">🏢 Security & Transport</div>
+      <div class="mov-btn devolucion" onclick="setEmpresaDJ('EMPSER S.A.C.',this)">🏢 EMPSER</div>
+    </div>
+    <input type="hidden" id="dj-empresa" value="SECURITY & TRANSPORT S.A.C.">
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos Generales</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Apellidos y Nombres *</label>
+        <input type="text" id="dj-nombre" placeholder="APELLIDOS NOMBRES" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>DNI *</label>
+        <input type="text" id="dj-dni" placeholder="00000000" maxlength="8">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha de Nacimiento</label>
+        <input type="date" id="dj-nacimiento">
+      </div>
+      <div class="form-group">
+        <label>Estado Civil</label>
+        <select id="dj-estado-civil">
+          <option>Soltero</option>
+          <option>Casado</option>
+          <option>Conviviente</option>
+          <option>Divorciado</option>
+          <option>Viudo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Dirección</label>
+        <input type="text" id="dj-domicilio" placeholder="Calle, Jirón, Manzana, Lote..." style="text-transform:uppercase">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Distrito</label>
+        <input type="text" id="dj-distrito" placeholder="Distrito" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>Teléfono / Celular</label>
+        <input type="text" id="dj-celular" placeholder="9XXXXXXXX">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Correo Electrónico</label>
+        <input type="text" id="dj-correo" placeholder="correo@email.com">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sistema de Pensiones y Banco</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>AFP / Sistema Pensiones</label>
+        <select id="dj-afp">
+          <option value="">Seleccionar...</option>
+          <option>AFP INTEGRA</option>
+          <option>AFP PRIMA</option>
+          <option>AFP PROFUTURO</option>
+          <option>AFP HABITAT</option>
+          <option>ONP</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Banco</label>
+        <select id="dj-banco">
+          <option value="">Seleccionar...</option>
+          <option>BCP</option>
+          <option>BBVA</option>
+          <option>INTERBANK</option>
+          <option>SCOTIABANK</option>
+          <option>CONTINENTAL</option>
+          <option>BANBIF</option>
+          <option>OTRO</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Número de Cuenta</label>
+        <input type="text" id="dj-cuenta" placeholder="Número de cuenta bancaria">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Apariencia Física (Tallas)</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Grupo Sanguíneo</label>
+        <select id="dj-sangre">
+          <option value="">---</option>
+          <option>A+</option><option>A-</option>
+          <option>B+</option><option>B-</option>
+          <option>O+</option><option>O-</option>
+          <option>AB+</option><option>AB-</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Talla Camisa</label>
+        <select id="dj-camisa">
+          <option value="">---</option>
+          <option>XS</option><option>S</option><option>M</option>
+          <option>L</option><option>XL</option><option>XXL</option><option>XXXL</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Talla Pantalón</label>
+        <input type="text" id="dj-pantalon" placeholder="Ej: 32, 34, 36">
+      </div>
+      <div class="form-group">
+        <label>Talla Zapatos</label>
+        <input type="text" id="dj-zapatos" placeholder="Ej: 40, 41, 42">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Talla Casaca</label>
+        <select id="dj-casaca">
+          <option value="">---</option>
+          <option>XS</option><option>S</option><option>M</option>
+          <option>L</option><option>XL</option><option>XXL</option><option>XXXL</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Contacto de Emergencia</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" id="dj-emergencia-nombre" placeholder="Nombre completo" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="text" id="dj-emergencia-tel" placeholder="9XXXXXXXX">
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-submit" onclick="submitDeclaracion()">
+    📋 Generar Declaración Jurada
+  </button>
+
+  <div style="height:24px"></div>
+
+  <!-- Listado DJ generadas -->
+  <div class="card">
+    <div class="card-title">Declaraciones Generadas</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Buscar</label>
+        <input type="text" id="dj-buscar" placeholder="Nombre o DNI..." oninput="filtrarDJs()">
+      </div>
+    </div>
+    <div id="dj-lista"></div>
+  </div>
+</div>
+
 <!-- LOADING -->
 <div class="loading" id="loading">
   <div class="spinner"></div>
@@ -743,6 +1032,8 @@ function showTab(tab) {
   event.target.classList.add('active');
   if (tab === 'historial') loadHistorial();
   if (tab === 'dashboard') loadDashboard();
+  if (tab === 'contratos') loadContratos();
+  if (tab === 'declaraciones') loadDJs();
 }
 
 // ── MOVIMIENTO ────────────────────────────────────────────
@@ -1378,6 +1669,322 @@ function showToast(msg, type = '') {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
+// ── CONTRATOS ─────────────────────────────────────────────
+let contratosData = [];
+let djData = [];
+
+function setEmpresaContrato(val, el) {
+  document.getElementById('ct-empresa').value = val;
+  el.parentElement.querySelectorAll('.mov-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setEmpresaDJ(val, el) {
+  document.getElementById('dj-empresa').value = val;
+  el.parentElement.querySelectorAll('.mov-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function calcularFechaFin() {
+  const fechaInicio = document.getElementById('ct-fecha-inicio').value;
+  const meses = parseInt(document.getElementById('ct-meses').value);
+  if (!fechaInicio) return;
+  const d = new Date(fechaInicio);
+  d.setMonth(d.getMonth() + meses);
+  d.setDate(d.getDate() - 1);
+  document.getElementById('ct-fecha-fin').value = d.toISOString().split('T')[0];
+}
+
+async function submitContrato() {
+  const nombre = document.getElementById('ct-nombre').value.trim();
+  const dni = document.getElementById('ct-dni').value.trim();
+  if (!nombre || !dni) { showToast('⚠️ Nombre y DNI son obligatorios', 'error'); return; }
+
+  showLoading(true);
+  const data = {
+    action: 'saveContratoMYPE',
+    nombre_trabajador: nombre.toUpperCase(),
+    dni,
+    domicilio: document.getElementById('ct-domicilio').value.toUpperCase(),
+    telefono: document.getElementById('ct-telefono').value,
+    correo: document.getElementById('ct-correo').value,
+    cargo: document.getElementById('ct-cargo').value,
+    meses_duracion: document.getElementById('ct-meses').value,
+    fecha_inicio: formatDateForDisplay(document.getElementById('ct-fecha-inicio').value),
+    fecha_fin: formatDateForDisplay(document.getElementById('ct-fecha-fin').value),
+    sueldo: document.getElementById('ct-sueldo').value,
+    tipo_empresa: document.getElementById('ct-empresa').value
+  };
+
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+    const result = await res.json();
+    if (result.ok) {
+      showToast(`✅ Contrato generado — ID: ${result.id}`, 'success');
+      if (result.pdfUrl) {
+        setTimeout(() => window.open(result.pdfUrl, '_blank'), 1000);
+      }
+      resetContrato();
+      loadContratos();
+    } else throw new Error(result.error);
+  } catch(e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function submitDeclaracion() {
+  const nombre = document.getElementById('dj-nombre').value.trim();
+  const dni = document.getElementById('dj-dni').value.trim();
+  if (!nombre || !dni) { showToast('⚠️ Nombre y DNI son obligatorios', 'error'); return; }
+
+  showLoading(true);
+  const data = {
+    action: 'saveDeclaracionJurada',
+    nombre_completo: nombre.toUpperCase(),
+    dni,
+    fecha_nacimiento: formatDateForDisplay(document.getElementById('dj-nacimiento').value),
+    estado_civil: document.getElementById('dj-estado-civil').value,
+    domicilio: document.getElementById('dj-domicilio').value.toUpperCase(),
+    distrito: document.getElementById('dj-distrito').value.toUpperCase(),
+    celular: document.getElementById('dj-celular').value,
+    correo: document.getElementById('dj-correo').value,
+    afp: document.getElementById('dj-afp').value,
+    banco: document.getElementById('dj-banco').value,
+    cuenta_bancaria: document.getElementById('dj-cuenta').value,
+    grupo_sanguineo: document.getElementById('dj-sangre').value,
+    talla_camisa: document.getElementById('dj-camisa').value,
+    talla_pantalon: document.getElementById('dj-pantalon').value,
+    talla_zapatos: document.getElementById('dj-zapatos').value,
+    talla_casaca: document.getElementById('dj-casaca').value,
+    contacto_emergencia: document.getElementById('dj-emergencia-nombre').value.toUpperCase(),
+    tel_emergencia: document.getElementById('dj-emergencia-tel').value,
+    tipo_empresa: document.getElementById('dj-empresa').value
+  };
+
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+    const result = await res.json();
+    if (result.ok) {
+      showToast(`✅ Declaración generada — ID: ${result.id}`, 'success');
+      if (result.pdfUrl) {
+        setTimeout(() => window.open(result.pdfUrl, '_blank'), 1000);
+      }
+      resetDJ();
+      loadDJs();
+    } else throw new Error(result.error);
+  } catch(e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+function formatDateForDisplay(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function resetContrato() {
+  ['ct-nombre','ct-dni','ct-domicilio','ct-telefono','ct-correo','ct-fecha-inicio','ct-fecha-fin','ct-sueldo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = id === 'ct-sueldo' ? '1,130.00' : '';
+  });
+}
+
+function resetDJ() {
+  ['dj-nombre','dj-dni','dj-domicilio','dj-distrito','dj-celular','dj-correo','dj-cuenta','dj-pantalon','dj-zapatos','dj-emergencia-nombre','dj-emergencia-tel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+async function loadContratos() {
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getContratos' }) });
+    const result = await res.json();
+    if (result.ok) { contratosData = result.data; filtrarContratos(); }
+  } catch(e) {}
+}
+
+async function loadDJs() {
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getDeclaraciones' }) });
+    const result = await res.json();
+    if (result.ok) { djData = result.data; filtrarDJs(); }
+  } catch(e) {}
+}
+
+function filtrarContratos() {
+  const buscar = document.getElementById('ct-buscar').value.toLowerCase();
+  const lista = contratosData.filter(r => JSON.stringify(r).toLowerCase().includes(buscar));
+  renderDocumentos('ct-lista', lista, 'contrato');
+}
+
+function filtrarDJs() {
+  const buscar = document.getElementById('dj-buscar').value.toLowerCase();
+  const lista = djData.filter(r => JSON.stringify(r).toLowerCase().includes(buscar));
+  renderDocumentos('dj-lista', lista, 'declaracion');
+}
+
+function renderDocumentos(containerId, data, tipo) {
+  const el = document.getElementById(containerId);
+  if (!data.length) { el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--gray-text);font-size:13px">No hay registros</div>'; return; }
+
+  el.innerHTML = data.slice(0, 30).map((r, idx) => {
+    const id = r.ID_Contrato || r.ID_DJ || '';
+    const nombre = r.Nombre_Trabajador || r.Nombre_Completo || '';
+    const dni = r.DNI || '';
+    const fecha = r.Fecha_Generacion || '';
+    const pdf = r.PDF_Contrato || r.PDF_DJ || '';
+    const escaneado = r.Escaneado || 'No';
+    const pdfEscaneado = r.PDF_Escaneado || '';
+
+    return `
+      <div style="border:1px solid var(--gray-border);border-radius:8px;padding:12px;margin-bottom:8px;background:var(--white)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy)">${nombre}</div>
+            <div style="font-size:11px;color:var(--gray-text)">DNI: ${dni} | ID: ${id}</div>
+            <div style="font-size:11px;color:var(--gray-text)">${fecha}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+            ${pdf ? `<a href="${pdf}" target="_blank" style="font-size:11px;background:var(--navy);color:white;padding:4px 8px;border-radius:6px;text-decoration:none">📄 PDF</a>` : ''}
+            <span style="font-size:10px;color:${escaneado==='Sí'?'var(--green)':'var(--gray-text)'}">
+              ${escaneado==='Sí' ? '✅ Escaneado' : '⏳ Pendiente escaneo'}
+            </span>
+            ${pdfEscaneado ? `<a href="${pdfEscaneado}" target="_blank" style="font-size:11px;background:#2E7D32;color:white;padding:4px 8px;border-radius:6px;text-decoration:none">🔍 Escaneado</a>` : ''}
+          </div>
+        </div>
+        ${escaneado !== 'Sí' ? `
+        <div style="margin-top:8px">
+          <button onclick="abrirEscaner('${id}','${tipo}')" style="background:var(--yellow);color:var(--navy);border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;width:100%">
+            📷 Escanear Documento Firmado
+          </button>
+        </div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ── ESCANER ────────────────────────────────────────────────
+let escaneandoId = null;
+let escaneandoTipo = null;
+
+function abrirEscaner(id, tipo) {
+  escaneandoId = id;
+  escaneandoTipo = tipo;
+  document.getElementById('modal-escaner').style.display = 'flex';
+}
+
+function cerrarEscaner() {
+  document.getElementById('modal-escaner').style.display = 'none';
+  escaneandoId = null;
+  escaneandoTipo = null;
+  document.getElementById('escaneo-preview').style.display = 'none';
+  document.getElementById('escaneo-datos').innerHTML = '';
+  document.getElementById('escaneo-foto-data').value = '';
+}
+
+function handleEscaneo(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('escaneo-foto-data').value = ev.target.result;
+    const img = document.getElementById('escaneo-preview');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    extraerDatosEscaneo(ev.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function extraerDatosEscaneo(imgData) {
+  // Mostrar formulario de confirmación de datos extraídos
+  const contenedor = document.getElementById('escaneo-datos');
+  if (escaneandoTipo === 'contrato') {
+    contenedor.innerHTML = `
+      <div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">✏️ Verificar y completar datos del documento escaneado:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">NOMBRE</label><input id="esc-nombre" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="Nombre del trabajador"></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">DNI</label><input id="esc-dni" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="DNI"></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">FECHA INICIO</label><input id="esc-inicio" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="dd/mm/yyyy"></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">FECHA FIN</label><input id="esc-fin" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="dd/mm/yyyy"></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">SUELDO S/</label><input id="esc-sueldo" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="1,130.00"></div>
+        </div>
+      </div>
+    `;
+  } else {
+    contenedor.innerHTML = `
+      <div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">✏️ Verificar y completar datos extraídos:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">DNI</label><input id="esc-dni" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="DNI"></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">CELULAR</label><input id="esc-celular" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="9XXXXXXXX"></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">AFP</label><input id="esc-afp" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="AFP INTEGRA"></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">BANCO</label><input id="esc-banco" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="BCP"></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">T. CAMISA</label><input id="esc-camisa" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="M/L/XL"></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--gray-text)">T. PANTALÓN</label><input id="esc-pantalon" type="text" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;font-size:12px" placeholder="32/34/36"></div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+async function confirmarEscaneo() {
+  const foto = document.getElementById('escaneo-foto-data').value;
+  if (!foto) { showToast('⚠️ Primero toma una foto del documento', 'error'); return; }
+
+  let datosExtraidos = {};
+  if (escaneandoTipo === 'contrato') {
+    datosExtraidos = {
+      nombre: document.getElementById('esc-nombre')?.value || '',
+      dni: document.getElementById('esc-dni')?.value || '',
+      fecha_inicio: document.getElementById('esc-inicio')?.value || '',
+      fecha_fin: document.getElementById('esc-fin')?.value || '',
+      sueldo: document.getElementById('esc-sueldo')?.value || ''
+    };
+  } else {
+    datosExtraidos = {
+      dni: document.getElementById('esc-dni')?.value || '',
+      telefono: document.getElementById('esc-celular')?.value || '',
+      afp: document.getElementById('esc-afp')?.value || '',
+      banco: document.getElementById('esc-banco')?.value || '',
+      talla_camisa: document.getElementById('esc-camisa')?.value || '',
+      talla_pantalon: document.getElementById('esc-pantalon')?.value || ''
+    };
+  }
+
+  showLoading(true);
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'registrarEscaneado',
+        tipo: escaneandoTipo,
+        id: escaneandoId,
+        foto,
+        datos_extraidos: datosExtraidos
+      })
+    });
+    const result = await res.json();
+    if (result.ok) {
+      showToast('✅ Documento escaneado y guardado en Drive', 'success');
+      cerrarEscaner();
+      if (escaneandoTipo === 'contrato') loadContratos();
+      else loadDJs();
+    } else throw new Error(result.error);
+  } catch(e) {
+    showToast('❌ Error: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────
 window.addEventListener('load', () => {
   ['u-firma','a-firma','v-firma','c-firma'].forEach(initFirma);
@@ -1385,5 +1992,36 @@ window.addEventListener('load', () => {
   loadPersonal();
 });
 </script>
+
+<!-- MODAL ESCANER -->
+<div id="modal-escaner" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:white;border-radius:16px;padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:700;font-size:16px;color:var(--navy)">📷 Escanear Documento</div>
+      <button onclick="cerrarEscaner()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-text)">✕</button>
+    </div>
+
+    <div style="background:var(--gray-bg);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--gray-text)">
+      Toma una foto clara del documento ya firmado y con huellas. Luego verifica los datos extraídos.
+    </div>
+
+    <div class="foto-upload" style="margin-bottom:12px">
+      <input type="file" accept="image/*" capture="environment" onchange="handleEscaneo(event)">
+      <div class="foto-upload-icon">📷</div>
+      <div class="foto-upload-text">Toca para escanear el documento</div>
+    </div>
+    <input type="hidden" id="escaneo-foto-data">
+
+    <img id="escaneo-preview" style="display:none;width:100%;border-radius:8px;margin-bottom:12px;border:2px solid var(--gray-border)">
+
+    <div id="escaneo-datos"></div>
+
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="cerrarEscaner()" class="btn-clear" style="flex:1">Cancelar</button>
+      <button onclick="confirmarEscaneo()" class="btn-submit" style="flex:2">✅ Confirmar y Guardar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
