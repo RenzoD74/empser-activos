@@ -804,6 +804,52 @@
 
   <div style="height:24px"></div>
 
+  <!-- Escanear contrato existente sin crearlo -->
+  <div class="card" style="border:2px dashed var(--yellow)">
+    <div class="card-title">📷 Escanear Contrato Firmado (sin crearlo)</div>
+    <div style="font-size:12px;color:var(--gray-text);margin-bottom:12px">
+      Usa esta opción si el contrato fue generado manualmente o en papel. Solo escanea y guarda en Drive + Sheets.
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre del Trabajador *</label>
+        <input type="text" id="ct-esc-nombre" placeholder="APELLIDOS Y NOMBRES" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>DNI *</label>
+        <input type="text" id="ct-esc-dni" placeholder="00000000" maxlength="8">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Empresa</label>
+        <select id="ct-esc-empresa">
+          <option>SECURITY &amp; TRANSPORT S.A.C.</option>
+          <option>EMPSER S.A.C.</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Fecha de Inicio</label>
+        <input type="text" id="ct-esc-inicio" placeholder="dd/mm/yyyy">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha de Fin</label>
+        <input type="text" id="ct-esc-fin" placeholder="dd/mm/yyyy">
+      </div>
+      <div class="form-group">
+        <label>Sueldo S/</label>
+        <input type="text" id="ct-esc-sueldo" placeholder="1,130.00">
+      </div>
+    </div>
+    <button onclick="abrirEscanerLibre('contrato')" style="background:var(--yellow);color:var(--navy);border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:4px">
+      📷 Tomar Foto del Contrato Firmado
+    </button>
+  </div>
+
+  <div style="height:24px"></div>
+
   <!-- Listado de contratos generados -->
   <div class="card">
     <div class="card-title">Contratos Generados</div>
@@ -1084,6 +1130,42 @@
   <button class="btn-submit" onclick="submitDeclaracion()">
     📋 Generar Declaración Jurada
   </button>
+
+  <div style="height:24px"></div>
+
+  <!-- Escanear DJ existente sin crearla -->
+  <div class="card" style="border:2px dashed var(--yellow)">
+    <div class="card-title">📷 Escanear Declaración Jurada Firmada (sin crearla)</div>
+    <div style="font-size:12px;color:var(--gray-text);margin-bottom:12px">
+      Usa esta opción si la DJ ya fue llenada a mano. Solo escanea y guarda en Drive + Sheets.
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre del Trabajador *</label>
+        <input type="text" id="dj-esc-nombre" placeholder="APELLIDOS Y NOMBRES" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>DNI *</label>
+        <input type="text" id="dj-esc-dni" placeholder="00000000" maxlength="8">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Empresa</label>
+        <select id="dj-esc-empresa">
+          <option>SECURITY &amp; TRANSPORT S.A.C.</option>
+          <option>EMPSER S.A.C.</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>AFP / Banco (opcional)</label>
+        <input type="text" id="dj-esc-afp" placeholder="AFP INTEGRA / BCP">
+      </div>
+    </div>
+    <button onclick="abrirEscanerLibre('declaracion')" style="background:var(--yellow);color:var(--navy);border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:4px">
+      📷 Tomar Foto de la Declaración Jurada Firmada
+    </button>
+  </div>
 
   <div style="height:24px"></div>
 
@@ -1995,10 +2077,41 @@ function renderDocumentos(containerId, data, tipo) {
 // ── ESCANER ────────────────────────────────────────────────
 let escaneandoId = null;
 let escaneandoTipo = null;
+let escaneandoLibre = false;
 
 function abrirEscaner(id, tipo) {
   escaneandoId = id;
   escaneandoTipo = tipo;
+  escaneandoLibre = false;
+  // Update modal title
+  const titulo = document.getElementById('modal-escaner-titulo');
+  if (titulo) titulo.textContent = '📷 Escanear Documento';
+  document.getElementById('escaneo-preview').style.display = 'none';
+  document.getElementById('escaneo-datos').innerHTML = '';
+  document.getElementById('escaneo-foto-data').value = '';
+  document.getElementById('modal-escaner').style.display = 'flex';
+}
+
+function abrirEscanerLibre(tipo) {
+  // Validate required fields first
+  if (tipo === 'contrato') {
+    const nombre = document.getElementById('ct-esc-nombre').value.trim();
+    const dni = document.getElementById('ct-esc-dni').value.trim();
+    if (!nombre || !dni) { showToast('⚠️ Nombre y DNI son obligatorios', 'error'); return; }
+  } else {
+    const nombre = document.getElementById('dj-esc-nombre').value.trim();
+    const dni = document.getElementById('dj-esc-dni').value.trim();
+    if (!nombre || !dni) { showToast('⚠️ Nombre y DNI son obligatorios', 'error'); return; }
+  }
+  escaneandoId = null;
+  escaneandoTipo = tipo;
+  escaneandoLibre = true;
+  // Update modal title
+  const titulo = document.getElementById('modal-escaner-titulo');
+  if (titulo) titulo.textContent = tipo === 'contrato' ? '📷 Escanear Contrato Firmado' : '📷 Escanear Declaración Jurada Firmada';
+  document.getElementById('escaneo-preview').style.display = 'none';
+  document.getElementById('escaneo-datos').innerHTML = '';
+  document.getElementById('escaneo-foto-data').value = '';
   document.getElementById('modal-escaner').style.display = 'flex';
 }
 
@@ -2062,45 +2175,101 @@ async function confirmarEscaneo() {
   const foto = document.getElementById('escaneo-foto-data').value;
   if (!foto) { showToast('⚠️ Primero toma una foto del documento', 'error'); return; }
 
-  let datosExtraidos = {};
-  if (escaneandoTipo === 'contrato') {
-    datosExtraidos = {
-      nombre: document.getElementById('esc-nombre')?.value || '',
-      dni: document.getElementById('esc-dni')?.value || '',
-      fecha_inicio: document.getElementById('esc-inicio')?.value || '',
-      fecha_fin: document.getElementById('esc-fin')?.value || '',
-      sueldo: document.getElementById('esc-sueldo')?.value || ''
-    };
-  } else {
-    datosExtraidos = {
-      dni: document.getElementById('esc-dni')?.value || '',
-      telefono: document.getElementById('esc-celular')?.value || '',
-      afp: document.getElementById('esc-afp')?.value || '',
-      banco: document.getElementById('esc-banco')?.value || '',
-      talla_camisa: document.getElementById('esc-camisa')?.value || '',
-      talla_pantalon: document.getElementById('esc-pantalon')?.value || ''
-    };
-  }
-
   showLoading(true);
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({
+    let payload;
+
+    if (escaneandoLibre) {
+      // Escaneo libre — crear nuevo registro directo
+      if (escaneandoTipo === 'contrato') {
+        payload = {
+          action: 'registrarEscaneadoLibre',
+          tipo: 'contrato',
+          foto,
+          nombre: document.getElementById('ct-esc-nombre').value.toUpperCase(),
+          dni: document.getElementById('ct-esc-dni').value,
+          empresa: document.getElementById('ct-esc-empresa').value,
+          fecha_inicio: document.getElementById('ct-esc-inicio').value,
+          fecha_fin: document.getElementById('ct-esc-fin').value,
+          sueldo: document.getElementById('ct-esc-sueldo').value,
+          // datos del formulario de confirmación si los llenaron
+          datos_confirmados: {
+            nombre: document.getElementById('esc-nombre')?.value || '',
+            dni: document.getElementById('esc-dni')?.value || '',
+            fecha_inicio: document.getElementById('esc-inicio')?.value || '',
+            fecha_fin: document.getElementById('esc-fin')?.value || '',
+            sueldo: document.getElementById('esc-sueldo')?.value || ''
+          }
+        };
+      } else {
+        payload = {
+          action: 'registrarEscaneadoLibre',
+          tipo: 'declaracion',
+          foto,
+          nombre: document.getElementById('dj-esc-nombre').value.toUpperCase(),
+          dni: document.getElementById('dj-esc-dni').value,
+          empresa: document.getElementById('dj-esc-empresa').value,
+          afp_banco: document.getElementById('dj-esc-afp').value,
+          datos_confirmados: {
+            dni: document.getElementById('esc-dni')?.value || '',
+            telefono: document.getElementById('esc-celular')?.value || '',
+            afp: document.getElementById('esc-afp')?.value || '',
+            banco: document.getElementById('esc-banco')?.value || '',
+            talla_camisa: document.getElementById('esc-camisa')?.value || '',
+            talla_pantalon: document.getElementById('esc-pantalon')?.value || ''
+          }
+        };
+      }
+    } else {
+      // Escaneo de documento previamente generado
+      let datosExtraidos = {};
+      if (escaneandoTipo === 'contrato') {
+        datosExtraidos = {
+          nombre: document.getElementById('esc-nombre')?.value || '',
+          dni: document.getElementById('esc-dni')?.value || '',
+          fecha_inicio: document.getElementById('esc-inicio')?.value || '',
+          fecha_fin: document.getElementById('esc-fin')?.value || '',
+          sueldo: document.getElementById('esc-sueldo')?.value || ''
+        };
+      } else {
+        datosExtraidos = {
+          dni: document.getElementById('esc-dni')?.value || '',
+          telefono: document.getElementById('esc-celular')?.value || '',
+          afp: document.getElementById('esc-afp')?.value || '',
+          banco: document.getElementById('esc-banco')?.value || '',
+          talla_camisa: document.getElementById('esc-camisa')?.value || '',
+          talla_pantalon: document.getElementById('esc-pantalon')?.value || ''
+        };
+      }
+      payload = {
         action: 'registrarEscaneado',
         tipo: escaneandoTipo,
         id: escaneandoId,
         foto,
         datos_extraidos: datosExtraidos
-      })
-    });
+      };
+    }
+
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
     const result = await res.json();
     if (result.ok) {
       showToast('✅ Documento escaneado y guardado en Drive', 'success');
+      // Reset libre form if needed
+      if (escaneandoLibre) {
+        if (escaneandoTipo === 'contrato') {
+          ['ct-esc-nombre','ct-esc-dni','ct-esc-inicio','ct-esc-fin','ct-esc-sueldo'].forEach(id => {
+            const el = document.getElementById(id); if(el) el.value = '';
+          });
+        } else {
+          ['dj-esc-nombre','dj-esc-dni','dj-esc-afp'].forEach(id => {
+            const el = document.getElementById(id); if(el) el.value = '';
+          });
+        }
+      }
       cerrarEscaner();
       if (escaneandoTipo === 'contrato') loadContratos();
       else loadDJs();
-    } else throw new Error(result.error);
+    } else throw new Error(result.error || 'Error desconocido');
   } catch(e) {
     showToast('❌ Error: ' + e.message, 'error');
   } finally {
@@ -2120,7 +2289,7 @@ window.addEventListener('load', () => {
 <div id="modal-escaner" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px">
   <div style="background:white;border-radius:16px;padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div style="font-weight:700;font-size:16px;color:var(--navy)">📷 Escanear Documento</div>
+      <div id="modal-escaner-titulo" style="font-weight:700;font-size:16px;color:var(--navy)">📷 Escanear Documento</div>
       <button onclick="cerrarEscaner()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-text)">✕</button>
     </div>
 
